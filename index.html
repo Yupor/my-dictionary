@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>my dictionary — a personal lexicon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --bg-soft:#F7F5EF;
+    --card:#FAFAF7;
+    --ink:#1A1A1A;
+    --ink-soft:#4A4A48;
+    --ink-mute:#8E8C88;
+    --line:#E5E3DD;
+    --line-soft:#EFEDE7;
+    --accent:#C73E2B;
+
+    /* tag group colors */
+    --work-bg:rgba(194,103,54,0.10);
+    --work-border:rgba(194,103,54,0.45);
+    --work-fg:#8B4513;
+    --work-strong:#C26736;
+    --private-bg:rgba(75,107,160,0.10);
+    --private-border:rgba(75,107,160,0.45);
+    --private-fg:#2C4870;
+    --private-strong:#4B6BA0;
+
+    /* category palette (muted) */
+    --c1:#8B2932; --c2:#B8862B; --c3:#6B7438; --c4:#455A75; --c5:#5E3A5C;
+    --c6:#355E3B; --c7:#B45236; --c8:#2C3E50; --c9:#7A5C3A; --c10:#4A6670;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Newsreader','Noto Serif JP',serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    line-height:1.6;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;padding:48px 28px 96px;}
+
+  /* ========= MASTHEAD ========= */
+  .masthead{margin-bottom:56px;position:relative;}
+  .overtitle{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:12px;
+    letter-spacing:0.3em;text-transform:uppercase;
+    color:var(--ink-soft);margin-bottom:18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .overtitle::before{
+    content:'';width:24px;height:1px;background:var(--ink-soft);
+  }
+  h1.title{
+    font-family:'Fraunces',serif;
+    font-style:italic;font-weight:500;
+    font-size:clamp(56px,12vw,120px);
+    line-height:0.92;letter-spacing:-0.035em;
+    color:var(--ink);
+  }
+  h1.title .period{color:var(--accent);font-style:normal;}
+  .meta-line{
+    margin-top:20px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:14px;color:var(--ink-soft);
+  }
+  .meta-line .ja{
+    font-family:'Noto Sans JP',sans-serif;
+    font-weight:500;color:var(--ink);
+  }
+  .meta-line .dash{color:var(--ink-mute);}
+  .meta-line .count{
+    font-family:'Newsreader',serif;font-style:italic;
+    font-weight:600;color:var(--accent);font-size:18px;margin-right:2px;
+  }
+  .sync-badge{
+    margin-left:auto;
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;color:var(--ink-mute);letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .sync-badge .dot{
+    width:6px;height:6px;border-radius:50%;background:var(--ink-mute);
+  }
+  .sync-badge.synced .dot{background:#5BAE8C;}
+
+  /* ========= ADD ========= */
+  .add-section{
+    margin-bottom:40px;
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--line);
+    padding:18px 0 20px;
+  }
+  .section-eyebrow{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin-bottom:14px;
+  }
+  .add-row{
+    display:flex;align-items:center;gap:16px;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:8px;
+  }
+  .add-input{
+    flex:1;padding:8px 0;
+    border:none;outline:none;background:transparent;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:26px;color:var(--ink);
+    font-style:normal;letter-spacing:-0.01em;
+  }
+  .add-input::placeholder{color:var(--ink-mute);font-weight:300;}
+  .add-btn{
+    padding:8px 4px;background:transparent;border:none;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--accent);
+    display:inline-flex;align-items:center;gap:10px;
+    transition:gap 0.18s,opacity 0.15s;
+  }
+  .add-btn .arrow{
+    font-family:'Newsreader',serif;font-style:italic;
+    font-size:18px;letter-spacing:0;
+  }
+  .add-btn:hover{gap:14px;}
+  .add-btn:disabled{opacity:0.4;cursor:wait;}
+
+  /* ========= FILTERS ========= */
+  .filters{margin-bottom:36px;}
+  .filter-row{
+    display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+    padding-bottom:18px;border-bottom:1px solid var(--line);
+    margin-bottom:18px;
+  }
+  .search-wrap{flex:1;min-width:220px;position:relative;}
+  .search-wrap::before{
+    content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;border-radius:50%;
+    border:1.5px solid var(--ink-mute);pointer-events:none;
+  }
+  .search-wrap::after{
+    content:'';position:absolute;left:11px;top:calc(50% + 4px);
+    width:8px;height:1.5px;background:var(--ink-mute);
+    transform:rotate(45deg);pointer-events:none;
+  }
+  .search-filter{
+    width:100%;padding:10px 0 10px 26px;
+    border:none;background:transparent;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:15px;color:var(--ink);outline:none;
+    border-bottom:1px solid transparent;
+  }
+  .search-filter:focus{border-bottom-color:var(--ink);}
+  .search-filter::placeholder{color:var(--ink-mute);}
+  .sort-label{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:12px;color:var(--ink-mute);
+    letter-spacing:0.15em;text-transform:uppercase;
+  }
+  .sort-select{
+    padding:8px 28px 8px 10px;border:none;background:transparent;
+    font-family:'Newsreader',serif;font-style:italic;
+    font-weight:500;font-size:15px;color:var(--ink);
+    cursor:pointer;outline:none;
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A1612' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 6px center;
+  }
+
+  .filter-group-label{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.25em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin:14px 0 8px;
+  }
+  .cat-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+  .pill{
+    padding:4px 12px;border-radius:999px;
+    border:1px solid var(--line);background:transparent;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:12px;color:var(--ink-soft);
+    cursor:pointer;transition:all 0.15s;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .pill:hover{border-color:var(--ink-soft);color:var(--ink);}
+  .pill .pill-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--ink);
+  }
+  .pill.active{background:var(--ink);color:var(--card);border-color:var(--ink);}
+  .pill.active .pill-dot{background:var(--card);}
+  .pill .pill-count{
+    font-family:'Newsreader',serif;font-style:italic;
+    font-size:11px;color:var(--ink-mute);font-weight:500;
+  }
+  .pill.active .pill-count{color:var(--card);opacity:0.7;}
+
+  .tag-pills{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 11px;border-radius:3px;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.04em;
+    cursor:pointer;transition:all 0.15s;border:1px solid transparent;
+    user-select:none;
+  }
+  .tag-work{
+    background:var(--work-bg);color:var(--work-fg);
+    border-color:var(--work-border);
+  }
+  .tag-private{
+    background:var(--private-bg);color:var(--private-fg);
+    border-color:var(--private-border);
+  }
+  .tag-other{
+    background:rgba(138,130,120,0.1);color:#5C544A;
+    border-color:rgba(138,130,120,0.4);
+  }
+  .tag.outline{background:transparent;opacity:0.55;}
+  .tag.outline:hover{opacity:1;}
+  .tag.active-filter{
+    box-shadow:inset 0 -2px 0 currentColor;
+  }
+  .tag .tag-x{
+    font-family:'IBM Plex Sans',sans-serif;
+    opacity:0.6;font-size:11px;line-height:1;cursor:pointer;
+  }
+  .tag .tag-x:hover{opacity:1;}
+  .tag .tag-count{
+    font-family:'Newsreader',serif;font-style:italic;font-size:10px;
+    opacity:0.7;margin-left:2px;
+  }
+
+  /* ========= VIEW NAV ========= */
+  .view-nav{
+    display:flex;gap:24px;margin-bottom:36px;
+    border-bottom:1px solid var(--line);padding-bottom:6px;
+  }
+  .view-btn{
+    background:transparent;border:none;padding:8px 0;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--ink-mute);transition:color 0.15s;
+    display:inline-flex;align-items:center;gap:10px;
+    position:relative;
+  }
+  .view-btn:hover{color:var(--ink);}
+  .view-btn.active{color:var(--ink);}
+  .view-btn.active::after{
+    content:'';position:absolute;left:0;right:0;bottom:-7px;height:1.5px;
+    background:var(--accent);
+  }
+  .view-btn .vb-num{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+    font-size:15px;letter-spacing:0;color:var(--accent);
+  }
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ========= MAP VIEW ========= */
+  .map-header{margin-bottom:32px;}
+  .map-title{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:500;
+    font-size:clamp(40px,8vw,72px);line-height:1;letter-spacing:-0.025em;
+    color:var(--ink);
+  }
+  .map-sub{
+    font-family:'Newsreader','Noto Serif JP',serif;font-style:italic;
+    font-size:16px;color:var(--ink-soft);margin-top:14px;max-width:620px;
+    line-height:1.6;
+  }
+  .map-stats{
+    display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    gap:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .map-stat{
+    padding:18px 16px;border-right:1px solid var(--line);
+  }
+  .map-stat:last-child{border-right:none;}
+  .map-stat .ms-label{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--ink-mute);margin-bottom:6px;
+  }
+  .map-stat .ms-value{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:500;
+    font-size:36px;line-height:1;color:var(--ink);letter-spacing:-0.02em;
+  }
+  .map-stat .ms-unit{
+    font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--ink-mute);
+    margin-left:4px;
+  }
+  .map-narrative{
+    background:var(--card);border-left:2px solid var(--accent);
+    padding:18px 22px;margin-bottom:32px;
+    font-family:'Newsreader','Noto Serif JP',serif;font-style:italic;
+    font-size:18px;line-height:1.6;color:var(--ink);
+  }
+  .map-narrative .em{
+    color:var(--accent);font-weight:600;font-style:italic;
+  }
+  .map-svg-wrap{
+    position:relative;width:100%;height:640px;
+    background:linear-gradient(180deg, var(--bg) 0%, var(--card) 100%);
+    border:1px solid var(--line);margin-bottom:28px;overflow:hidden;
+  }
+  #mapSvg{width:100%;height:100%;display:block;cursor:default;}
+  .map-tooltip{
+    position:absolute;top:0;left:0;pointer-events:none;
+    background:var(--ink);color:var(--bg);
+    padding:8px 12px;border-radius:0;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:12px;max-width:240px;line-height:1.4;
+    opacity:0;transition:opacity 0.12s;z-index:5;
+  }
+  .map-tooltip.show{opacity:1;}
+  .map-tooltip .tt-word{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:600;
+    font-size:16px;margin-bottom:3px;
+  }
+  .map-tooltip .tt-meta{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:0.7;
+  }
+  .map-legend{
+    display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;
+  }
+  .map-legend .legend-item{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:5px 12px;font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:11px;color:var(--ink-soft);letter-spacing:0.05em;
+    border:1px solid var(--line);
+  }
+  .map-legend .legend-dot{
+    width:10px;height:10px;border-radius:50%;
+  }
+  .map-legend .legend-count{
+    font-family:'Newsreader',serif;font-style:italic;font-size:10px;
+    color:var(--ink-mute);
+  }
+  .map-category-bars{margin-top:8px;}
+  .map-category-bars .bar-row{
+    display:grid;grid-template-columns:160px 1fr 80px;gap:14px;
+    align-items:center;padding:8px 0;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .map-category-bars .bar-row:last-child{border-bottom:none;}
+  .map-category-bars .br-name{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:13px;color:var(--ink);
+    display:flex;align-items:center;gap:8px;
+  }
+  .map-category-bars .br-bar{
+    height:8px;background:var(--line);position:relative;overflow:hidden;
+  }
+  .map-category-bars .br-bar > span{
+    display:block;height:100%;
+  }
+  .map-category-bars .br-val{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-mute);
+    text-align:right;
+  }
+  .map-empty{
+    text-align:center;padding:120px 24px;
+    font-family:'Newsreader',serif;font-style:italic;font-size:20px;
+    color:var(--ink-mute);
+  }
+
+  /* ========= SETTINGS ========= */
+  .settings-section{
+    margin-top:40px;padding-top:24px;border-top:1px dashed var(--line);
+  }
+  .settings-section summary{
+    cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--ink-mute);
+    padding:6px 0;
+    list-style:none;
+  }
+  .settings-section summary::-webkit-details-marker{display:none;}
+  .settings-section summary:hover{color:var(--ink);}
+  .settings-body{padding:18px 0 4px;display:flex;flex-direction:column;gap:18px;}
+  .setting-row{display:flex;flex-direction:column;gap:6px;}
+  .setting-row label{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:12px;color:var(--ink);
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;
+  }
+  .setting-hint{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:400;font-size:12px;
+    color:var(--ink-mute);
+  }
+  .setting-row input{
+    padding:10px 12px;border:1px solid var(--line);background:var(--bg);
+    font-family:'IBM Plex Sans','IBM Plex Mono',monospace;font-size:13px;
+    color:var(--ink);outline:none;
+  }
+  .setting-row input:focus{border-color:var(--ink);}
+  .setting-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .setting-btn{
+    padding:6px 12px;background:transparent;border:1px solid var(--line);
+    color:var(--ink-soft);cursor:pointer;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.05em;
+    transition:all 0.15s;
+  }
+  .setting-btn:hover{border-color:var(--ink);color:var(--ink);}
+  .setting-save{
+    align-self:flex-start;padding:8px 18px;background:var(--ink);color:var(--bg);
+    border:1px solid var(--ink);cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;
+    transition:all 0.15s;
+  }
+  .setting-save:hover{background:var(--accent);border-color:var(--accent);}
+  .sync-block{
+    padding:18px 0;border-top:1px solid var(--line);
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .sync-block.alt{opacity:0.78;}
+  .sync-block-title{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:600;font-size:13px;color:var(--ink);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .recommended{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+    color:var(--accent);background:rgba(199,62,43,0.1);
+    padding:2px 8px;border:1px solid rgba(199,62,43,0.3);
+  }
+  .ext-link{
+    color:var(--accent);text-decoration:none;font-weight:400;font-size:11px;
+    font-style:italic;font-family:'Newsreader',serif;
+    margin-left:10px;
+  }
+  .ext-link:hover{text-decoration:underline;}
+  .setting-btn.primary{
+    background:var(--ink);color:var(--bg);border-color:var(--ink);
+  }
+  .setting-btn.primary:hover{background:var(--accent);border-color:var(--accent);color:var(--bg);}
+
+  /* ========= ENTRIES ========= */
+  .entries-eyebrow{
+    margin:8px 0 24px;
+    display:flex;align-items:center;gap:14px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--ink-mute);
+  }
+  .entries-eyebrow .line{flex:1;height:1px;background:var(--line);}
+
+  .entries{
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border-top:1px solid var(--ink);
+  }
+  .entry{
+    padding:26px 22px;border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line);cursor:pointer;
+    transition:background 0.2s;
+    display:flex;flex-direction:column;gap:8px;
+    position:relative;
+    animation:entryIn 0.45s cubic-bezier(0.22,1,0.36,1) backwards;
+  }
+  .entry:nth-child(2n){border-right:none;}
+  .entry:hover{background:var(--card);}
+  @keyframes entryIn{
+    0%{opacity:0;transform:translateY(8px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+
+  .entry-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  }
+  .entry-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--ink-mute);
+  }
+  .entry-cat{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--ink-soft);
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .entry-cat .cat-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--ink);
+  }
+  .entry-word{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:600;
+    font-size:34px;line-height:1.1;letter-spacing:-0.015em;
+    color:var(--ink);word-break:break-word;margin-top:4px;
+  }
+  .entry-word.ja{
+    font-family:'Noto Serif JP','Newsreader',serif;
+    font-style:normal;font-weight:600;letter-spacing:-0.01em;
+  }
+  .entry-translation{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:15px;color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .entry-pron{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--ink-mute);
+  }
+  .entry-snippet{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-weight:400;font-size:14.5px;
+    color:var(--ink-soft);line-height:1.7;
+    overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;
+    -webkit-box-orient:vertical;margin-top:4px;flex:1;
+  }
+  .entry-tags{
+    display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;
+  }
+  .entry-tags .tag{
+    padding:2px 8px;font-size:10px;letter-spacing:0.03em;
+  }
+  .entry-foot{
+    margin-top:8px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--ink-mute);
+  }
+  .entry-foot .read{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+    font-size:13px;color:var(--accent);letter-spacing:-0.01em;
+  }
+
+  /* view count indicator */
+  .views{
+    display:inline-flex;align-items:center;gap:4px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .views .num{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-mute);
+  }
+
+  /* ========= EMPTY / LOADING ========= */
+  .empty-state{
+    grid-column:1/-1;text-align:center;padding:88px 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .empty-state .deco{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+    font-size:64px;color:var(--accent);margin-bottom:14px;line-height:1;
+  }
+  .empty-state .msg{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+    font-size:22px;color:var(--ink);margin-bottom:8px;
+  }
+  .empty-state .hint{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:14px;color:var(--ink-mute);font-weight:400;
+  }
+  .sample-btn{
+    margin-top:32px;padding:12px 24px;
+    background:transparent;color:var(--ink);
+    border:1px solid var(--ink);border-radius:0;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;
+    cursor:pointer;transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:12px;
+  }
+  .sample-btn:hover{background:var(--ink);color:var(--bg);}
+  .sample-btn .arrow{
+    font-family:'Newsreader',serif;font-style:italic;font-size:16px;letter-spacing:0;
+  }
+
+  .loading{
+    grid-column:1/-1;padding:80px 24px;text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  .loading .l-word{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:600;
+    font-size:36px;color:var(--ink);margin-bottom:18px;letter-spacing:-0.02em;
+  }
+  .loading .l-msg{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:13px;color:var(--ink-mute);
+    letter-spacing:0.15em;text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:10px;
+  }
+  .l-msg .dots{display:inline-flex;gap:4px;}
+  .l-msg .dot{
+    width:4px;height:4px;border-radius:50%;background:var(--accent);
+    animation:pulse 1.4s infinite ease-in-out both;
+  }
+  .l-msg .dot:nth-child(1){animation-delay:-0.32s;}
+  .l-msg .dot:nth-child(2){animation-delay:-0.16s;}
+  @keyframes pulse{0%,80%,100%{opacity:0.3;}40%{opacity:1;}}
+
+  /* ========= DETAIL PANEL ========= */
+  .panel-overlay{
+    position:fixed;inset:0;background:rgba(26,22,18,0.35);
+    z-index:50;opacity:0;pointer-events:none;
+    transition:opacity 0.3s;backdrop-filter:blur(2px);
+  }
+  .panel-overlay.open{opacity:1;pointer-events:auto;}
+  .detail-panel{
+    position:fixed;top:0;right:0;bottom:0;
+    width:min(640px,94vw);background:var(--bg);
+    z-index:60;transform:translateX(100%);
+    transition:transform 0.45s cubic-bezier(0.22,1,0.36,1);
+    overflow-y:auto;border-left:1px solid var(--ink);
+  }
+  .detail-panel.open{transform:translateX(0);}
+
+  .panel-head{
+    position:sticky;top:0;background:var(--bg);
+    padding:18px 28px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;z-index:2;
+  }
+  .panel-head .label{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--ink-mute);
+    display:flex;align-items:center;gap:12px;
+  }
+  .panel-head .label::before{
+    content:'';width:18px;height:1px;background:var(--ink-mute);
+  }
+  .panel-close{
+    background:transparent;border:none;cursor:pointer;
+    width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink);font-size:24px;line-height:1;font-weight:300;
+    transition:color 0.15s;
+  }
+  .panel-close:hover{color:var(--accent);}
+
+  .panel-body{padding:36px 32px 64px;}
+
+  .panel-word{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:600;
+    font-size:clamp(52px,8vw,80px);
+    line-height:1;letter-spacing:-0.025em;
+    color:var(--ink);word-break:break-word;margin-bottom:14px;
+  }
+  .panel-word.ja{
+    font-family:'Noto Serif JP','Newsreader',serif;
+    font-style:normal;font-weight:600;letter-spacing:-0.01em;
+  }
+  .panel-trans{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:22px;color:var(--ink-soft);
+    margin-bottom:10px;letter-spacing:-0.005em;
+  }
+  .panel-pron{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;color:var(--ink-mute);margin-bottom:24px;
+  }
+  .panel-pron .spelling{color:var(--ink);}
+
+  .panel-views{
+    margin-bottom:32px;padding:18px 20px;
+    background:var(--card);border-left:2px solid var(--accent);
+    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  }
+  .pv-stack{display:flex;flex-direction:column;gap:4px;}
+  .panel-views .pv-label{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--ink-mute);
+  }
+  .panel-views .pv-num{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:600;
+    font-size:42px;color:var(--ink);line-height:1;
+  }
+  .panel-views .pv-last{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-mute);
+    margin-left:auto;
+  }
+  .interest-tag{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+    font-size:16px;color:var(--accent);
+  }
+
+  .panel-cat-row{
+    margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .cat-input{
+    padding:5px 14px;border:1px solid var(--ink);background:transparent;
+    border-radius:0;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--ink);outline:none;min-width:140px;
+  }
+  .cat-input:focus{background:var(--card);}
+  .cat-edit-hint{
+    font-family:'Newsreader',serif;font-style:italic;
+    font-size:13px;color:var(--ink-mute);
+  }
+
+  .section{margin-bottom:34px;}
+  .section-label{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.28em;
+    text-transform:uppercase;margin-bottom:12px;
+    display:flex;align-items:center;gap:12px;color:var(--ink-mute);
+  }
+  .section-label::before{
+    content:'';width:14px;height:1px;background:var(--ink-mute);
+  }
+  .section-content{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-weight:400;font-size:16px;line-height:1.85;color:var(--ink);
+  }
+  .section-content.ja{
+    font-family:'Noto Serif JP','Newsreader',serif;
+  }
+  .section.simple .section-content{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:400;font-size:18px;line-height:1.7;
+    padding-left:18px;border-left:2px solid var(--accent);
+  }
+
+  /* Tags editor in panel */
+  .panel-tags-list{
+    display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;
+  }
+  .new-tag-row{
+    display:flex;gap:8px;align-items:center;
+    margin-top:10px;flex-wrap:wrap;
+  }
+  .new-tag-input{
+    flex:1;min-width:160px;padding:6px 10px;
+    border:1px solid var(--line);background:var(--card);
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:13px;color:var(--ink);outline:none;
+  }
+  .new-tag-input:focus{border-color:var(--ink);}
+  .new-tag-btn{
+    padding:6px 12px;border-radius:3px;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.06em;
+    border:1px solid;transition:all 0.15s;
+  }
+  .new-tag-btn.work{
+    background:var(--work-bg);color:var(--work-fg);
+    border-color:var(--work-border);
+  }
+  .new-tag-btn.work:hover{background:var(--work-strong);color:white;border-color:var(--work-strong);}
+  .new-tag-btn.private{
+    background:var(--private-bg);color:var(--private-fg);
+    border-color:var(--private-border);
+  }
+  .new-tag-btn.private:hover{background:var(--private-strong);color:white;border-color:var(--private-strong);}
+
+  .related-list{display:flex;flex-wrap:wrap;gap:0;}
+  .related-item{
+    padding:4px 0;
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:500;font-size:16px;color:var(--ink);
+    cursor:pointer;transition:color 0.15s;
+    margin-right:18px;
+    border-bottom:1px dotted var(--ink-mute);
+  }
+  .related-item:hover{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .movie-list{list-style:none;padding:0;}
+  .movie-list li{
+    padding:9px 0;
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-weight:400;font-size:15px;line-height:1.6;
+    display:flex;align-items:flex-start;gap:14px;
+    border-bottom:1px dotted var(--line);
+  }
+  .movie-list li:last-child{border-bottom:none;}
+  .movie-list li::before{
+    content:'—';color:var(--accent);font-family:'IBM Plex Sans',sans-serif;
+    flex-shrink:0;
+  }
+  .film-link{
+    color:var(--ink);text-decoration:none;
+    flex:1;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+    transition:color 0.15s;
+  }
+  .film-link:hover{color:var(--accent);}
+  .film-link .film-go{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+    color:var(--ink-mute);transition:color 0.15s;white-space:nowrap;
+  }
+  .film-link:hover .film-go{color:var(--accent);}
+  .filmarks-user-link{
+    margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+    font-family:'Newsreader',serif;font-style:italic;font-size:14px;
+  }
+  .filmarks-user-link a{color:var(--accent);text-decoration:none;}
+  .filmarks-user-link a:hover{text-decoration:underline;}
+
+  .notes-area{
+    width:100%;min-height:120px;padding:14px 16px;
+    border:1px solid var(--line);background:var(--card);
+    border-radius:0;
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-weight:400;font-size:15px;color:var(--ink);
+    line-height:1.7;resize:vertical;outline:none;transition:border-color 0.15s;
+  }
+  .notes-area:focus{border-color:var(--ink);}
+  .notes-area::placeholder{
+    color:var(--ink-mute);font-style:italic;
+  }
+
+  .panel-foot{
+    margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:14px;
+  }
+  .foot-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--ink-mute);letter-spacing:0.04em;
+  }
+  .delete-btn{
+    background:transparent;border:none;color:var(--ink-mute);
+    padding:6px 0;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;
+    transition:color 0.15s;
+  }
+  .delete-btn:hover{color:var(--accent);}
+
+  /* ========= TOAST ========= */
+  .toast{
+    position:fixed;bottom:24px;left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);
+    padding:12px 22px;border-radius:0;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:400;font-size:13px;
+    opacity:0;pointer-events:none;transition:all 0.3s;
+    z-index:100;max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ========= FOOTER IO ========= */
+  .io-row{
+    margin-top:64px;padding-top:24px;border-top:1px solid var(--line);
+    display:flex;gap:24px;justify-content:flex-end;flex-wrap:wrap;
+  }
+  .io-btn{
+    background:transparent;border:none;color:var(--ink-mute);
+    padding:4px 0;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;
+    transition:color 0.15s;
+  }
+  .io-btn:hover{color:var(--accent);}
+
+  /* ========= RESPONSIVE ========= */
+  @media(max-width:680px){
+    .wrap{padding:32px 18px 64px;}
+    .entries{grid-template-columns:1fr;}
+    .entry{border-right:none;}
+    .panel-body{padding:28px 22px 48px;}
+    .add-input{font-size:22px;}
+    .entry-word{font-size:30px;}
+    .meta-line{flex-direction:column;align-items:flex-start;gap:6px;}
+    .sync-badge{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="overtitle">A personal lexicon</div>
+  <h1 class="title">my dictionary<span class="period">.</span></h1>
+  <div class="meta-line">
+    <span class="ja">私の辞典</span>
+    <span class="dash">—</span>
+    <span><span class="count" id="countNum">0</span>entries collected</span>
+    <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
+  </div>
+</header>
+
+<nav class="view-nav">
+  <button class="view-btn active" data-view="collection">
+    <span class="vb-num">⌗</span> Collection
+  </button>
+  <button class="view-btn" data-view="map">
+    <span class="vb-num">✸</span> Interest map
+  </button>
+</nav>
+
+<section class="view active" id="view-collection">
+
+<section class="add-section">
+  <div class="section-eyebrow">New entry</div>
+  <div class="add-row">
+    <input type="text" class="add-input" id="addInput" placeholder="単語、名前、概念…なんでも" autocomplete="off" spellcheck="false">
+    <button class="add-btn" id="addBtn">Add <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<section class="filters">
+  <div class="filter-row">
+    <div class="search-wrap">
+      <input type="text" class="search-filter" id="searchFilter" placeholder="既存のエントリを検索">
+    </div>
+    <span class="sort-label">Sort</span>
+    <select class="sort-select" id="sortSelect">
+      <option value="newest">newest</option>
+      <option value="oldest">oldest</option>
+      <option value="az">A → Z</option>
+      <option value="za">Z → A</option>
+      <option value="mostread">most read</option>
+    </select>
+  </div>
+  <div class="filter-group-label">Category</div>
+  <div class="cat-pills" id="catPills"></div>
+  <div class="filter-group-label">Tags</div>
+  <div class="tag-pills" id="tagPills"></div>
+</section>
+
+<div class="entries-eyebrow">
+  <span>The collection</span>
+  <span class="line"></span>
+</div>
+
+<section class="entries" id="entries"></section>
+
+</section> <!-- end view-collection -->
+
+<section class="view" id="view-map">
+  <div class="map-header">
+    <div class="map-title">関心の地形図</div>
+    <div class="map-sub">Each entry is a bubble. Size = how often you've opened it. Color = category. Clusters show the shape of your attention.</div>
+  </div>
+  <div class="map-stats" id="mapStats"></div>
+  <div class="map-narrative" id="mapNarrative"></div>
+  <div class="map-svg-wrap">
+    <svg id="mapSvg"></svg>
+    <div class="map-tooltip" id="mapTooltip"></div>
+  </div>
+  <div class="map-legend" id="mapLegend"></div>
+  <div class="map-category-bars" id="mapCategoryBars"></div>
+</section>
+
+<section class="settings-section">
+  <details>
+    <summary>Settings ⚙</summary>
+    <div class="settings-body">
+      <div class="setting-row">
+        <label for="filmarksUserInput">Filmarks ユーザー名</label>
+        <input id="filmarksUserInput" type="text" placeholder="例: tanakayuko" autocomplete="off">
+        <div class="setting-hint">設定すると映画リスト下に「あなたの Filmarks プロフィール」リンクが出ます</div>
+      </div>
+
+      <div class="sync-block">
+        <div class="sync-block-title">クロスデバイス同期 — GitHub Gist <span class="recommended">recommended</span></div>
+        <div class="setting-row">
+          <label for="ghTokenInput">Personal Access Token <a href="https://github.com/settings/tokens/new?scopes=gist&description=my-dictionary" target="_blank" rel="noopener" class="ext-link">→ 発行する（gist スコープのみ）</a></label>
+          <input id="ghTokenInput" type="password" placeholder="ghp_..." autocomplete="off">
+        </div>
+        <div class="setting-row">
+          <label for="ghGistIdInput">Gist ID <span class="setting-hint">（空のままで「新規 Gist を作成」を押すと自動生成）</span></label>
+          <input id="ghGistIdInput" type="text" placeholder="例: a1b2c3d4e5f6..." autocomplete="off">
+        </div>
+        <div class="setting-actions">
+          <button class="setting-btn primary" id="ghCreateBtn">新規 Gist を作成</button>
+          <button class="setting-btn" id="ghTestBtn">接続テスト</button>
+          <button class="setting-btn" id="ghPullBtn">クラウドから読み込み</button>
+          <button class="setting-btn" id="ghPushBtn">クラウドへ書き出し</button>
+        </div>
+      </div>
+
+      <div class="sync-block alt">
+        <div class="sync-block-title">代替：Firebase Realtime Database</div>
+        <div class="setting-row">
+          <input id="firebaseURLInput" type="text" placeholder="https://your-project-default-rtdb.firebaseio.com/dictionary-secretpath" autocomplete="off">
+        </div>
+        <div class="setting-actions">
+          <button class="setting-btn" id="syncTestBtn">接続テスト</button>
+          <button class="setting-btn" id="syncPullBtn">読み込み</button>
+          <button class="setting-btn" id="syncPushBtn">書き出し</button>
+        </div>
+      </div>
+
+      <button class="setting-save" id="settingsSaveBtn">設定を保存</button>
+    </div>
+  </details>
+</section>
+
+<div class="io-row">
+  <button class="io-btn" id="exportBtn">Export</button>
+  <button class="io-btn" id="importBtn">Import</button>
+  <input type="file" id="importFile" accept=".json" style="display:none;">
+</div>
+
+</div>
+
+<div class="panel-overlay" id="overlay"></div>
+<aside class="detail-panel" id="detailPanel">
+  <div class="panel-head">
+    <span class="label">Entry detail</span>
+    <button class="panel-close" id="panelClose">×</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// =========================================================
+//  CONFIGURE HERE — 2行だけ書き換えて github.io に上げれば
+//  どの端末からも同じデータを読み書きできます
+// =========================================================
+var CONFIG = {
+  githubToken: 'PASTE_YOUR_GITHUB_PAT_HERE',
+  githubGistId: 'PASTE_YOUR_GIST_ID_HERE'
+};
+// =========================================================
+
+// ---------- STATE ----------
+var STORAGE_KEY = 'dictionary';
+var LEGACY_KEY = 'my_dictionary_v1';
+var state = {
+  entries: [],
+  tagGroups: {
+    work: ['PwC','SX','竹中工務店','東急不動産'],
+    private: ['private','ZOCCON','tiger bae']
+  },
+  filter: {category:'all', search:'', sort:'newest', tags:[]},
+  activeId: null
+};
+
+// ---------- CATEGORY COLORS ----------
+var PALETTE = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10'];
+function hashStr(s){
+  var h = 0;
+  for(var i=0;i<s.length;i++){ h = ((h<<5) - h) + s.charCodeAt(i); h |= 0; }
+  return Math.abs(h);
+}
+function colorFor(cat){
+  if(!cat) return 'var(--ink)';
+  return 'var(--' + PALETTE[hashStr(cat) % PALETTE.length] + ')';
+}
+
+// ---------- STORAGE (cross-device via window.storage) ----------
+var hasCloudStorage = typeof window !== 'undefined' && window.storage && typeof window.storage.set === 'function';
+
+async function loadAll(){
+  // try cloud storage (cross-device)
+  if(hasCloudStorage){
+    try{
+      var result = await window.storage.get(STORAGE_KEY);
+      if(result && result.value){
+        var d = JSON.parse(result.value);
+        if(Array.isArray(d.entries)) state.entries = d.entries;
+        if(d.tagGroups){
+          state.tagGroups.work = d.tagGroups.work || state.tagGroups.work;
+          state.tagGroups.private = d.tagGroups.private || state.tagGroups.private;
+        }
+        updateSyncBadge(true);
+        return;
+      }
+    }catch(e){ console.log('cloud get returned no data:', e.message); }
+  }
+  // fallback: localStorage (also try legacy key for migration)
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
+    if(raw){
+      var parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)){
+        state.entries = parsed; // legacy format
+      }else if(parsed && Array.isArray(parsed.entries)){
+        state.entries = parsed.entries;
+        if(parsed.tagGroups){
+          state.tagGroups.work = parsed.tagGroups.work || state.tagGroups.work;
+          state.tagGroups.private = parsed.tagGroups.private || state.tagGroups.private;
+        }
+      }
+      // migrate to cloud storage on next save
+      if(hasCloudStorage) await saveAll();
+    }
+  }catch(e){ console.error('load err', e); }
+  updateSyncBadge(hasCloudStorage);
+}
+
+var saveTimer = null;
+async function saveAll(){
+  var payload = JSON.stringify({
+    entries: state.entries,
+    tagGroups: state.tagGroups,
+    version: 2,
+    updatedAt: Date.now()
+  });
+  if(hasCloudStorage){
+    try{
+      await window.storage.set(STORAGE_KEY, payload);
+      updateSyncBadge(true);
+    }catch(e){ console.error('cloud save:', e); }
+  }
+  try{ localStorage.setItem(STORAGE_KEY, payload); }catch(e){}
+}
+function queueSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveAll, 300);
+}
+function updateSyncBadge(synced){
+  var badge = document.getElementById('syncBadge');
+  var text = document.getElementById('syncText');
+  if(!badge || !text) return;
+  if(synced){ badge.classList.add('synced'); text.textContent = 'synced'; }
+  else{ badge.classList.remove('synced'); text.textContent = 'local'; }
+}
+
+// ---------- UTIL ----------
+function uid(){ return 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function escapeHTML(str){
+  if(str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function formatDate(ts){
+  if(!ts) return '';
+  var d = new Date(ts);
+  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear();
+}
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+function isJapanese(s){ return /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s || ''); }
+
+function filmarksSearchURL(movieStr){
+  var title = (movieStr || '').split('(')[0].trim();
+  if(!title) title = movieStr || '';
+  return 'https://filmarks.com/search/movies?q=' + encodeURIComponent(title);
+}
+
+// settings (Filmarks user, Firebase URL, GitHub Gist) — stored separately from entries
+var settings = {
+  filmarksUser: '',
+  firebaseURL: '',
+  githubToken: '',
+  githubGistId: ''
+};
+function loadSettings(){
+  try{
+    var raw = localStorage.getItem('my_dictionary_settings');
+    if(raw){
+      var s = JSON.parse(raw);
+      settings.filmarksUser = s.filmarksUser || '';
+      settings.firebaseURL = s.firebaseURL || '';
+      settings.githubToken = s.githubToken || '';
+      settings.githubGistId = s.githubGistId || '';
+    }
+  }catch(e){}
+  // CONFIG overrides — hardcoded values in the file take priority
+  if(CONFIG.githubToken && CONFIG.githubToken.indexOf('PASTE_') !== 0){
+    settings.githubToken = CONFIG.githubToken;
+  }
+  if(CONFIG.githubGistId && CONFIG.githubGistId.indexOf('PASTE_') !== 0){
+    settings.githubGistId = CONFIG.githubGistId;
+  }
+}
+function saveSettings(){
+  try{ localStorage.setItem('my_dictionary_settings', JSON.stringify(settings)); }catch(e){}
+}
+
+function extractJSON(text){
+  if(!text) return null;
+  var attempts = [];
+  attempts.push(text.replace(/```json/gi,'').replace(/```/g,'').trim());
+  attempts.push(text.trim());
+  var m = text.match(/\{[\s\S]*\}/);
+  if(m) attempts.push(m[0]);
+  for(var i = 0; i < attempts.length; i++){
+    var t = attempts[i];
+    var first = t.indexOf('{'); var last = t.lastIndexOf('}');
+    if(first === -1 || last === -1 || last <= first) continue;
+    try{
+      var parsed = JSON.parse(t.substring(first, last + 1));
+      if(parsed && typeof parsed === 'object') return parsed;
+    }catch(e){}
+  }
+  console.error('extractJSON failed. Raw:', text);
+  return null;
+}
+
+// ---------- TAG HELPERS ----------
+function getTagGroup(tag){
+  if(state.tagGroups.work.indexOf(tag) !== -1) return 'work';
+  if(state.tagGroups.private.indexOf(tag) !== -1) return 'private';
+  return 'other';
+}
+function getAllTags(){
+  return state.tagGroups.work.concat(state.tagGroups.private);
+}
+function getTagCount(tag){
+  var n = 0;
+  state.entries.forEach(function(e){
+    if((e.tags || []).indexOf(tag) !== -1) n++;
+  });
+  return n;
+}
+function addNewTag(name, group){
+  name = (name || '').trim();
+  if(!name) return false;
+  var all = getAllTags();
+  if(all.indexOf(name) !== -1){ showToast('「' + name + '」は既にあります'); return false; }
+  if(group !== 'work' && group !== 'private') return false;
+  state.tagGroups[group].push(name);
+  queueSave();
+  return true;
+}
+function deleteTag(name){
+  state.tagGroups.work = state.tagGroups.work.filter(function(t){ return t !== name; });
+  state.tagGroups.private = state.tagGroups.private.filter(function(t){ return t !== name; });
+  state.entries.forEach(function(e){
+    if(e.tags) e.tags = e.tags.filter(function(t){ return t !== name; });
+  });
+  queueSave();
+}
+
+// ---------- INTEREST VIZ ----------
+function viewIntensityHTML(views){
+  var n = views || 0;
+  return '<span class="views">' +
+    '<span class="num">読 × ' + n + '</span>' +
+  '</span>';
+}
+function interestLabel(views){
+  var n = views || 0;
+  if(n >= 30) return '夢中';
+  if(n >= 15) return '深く戻ってくる';
+  if(n >= 8) return 'よく開く';
+  if(n >= 3) return '気になっている';
+  if(n >= 1) return 'はじめての出会い';
+  return '未読';
+}
+
+// ---------- SAMPLE DATA ----------
+var SAMPLE_ENTRIES = [
+  {
+    word:'アポリア', language:'ja', translation:'Aporia', spelling:'', pronunciation:'',
+    category:'哲学', tags:['private'],
+    meaningSimple:'答えが出せない、行き止まりのような問い。考えれば考えるほど解けなくなる、論理の袋小路。',
+    meaningAdult:'ギリシャ語で「道のなさ」を意味する哲学概念。ある問題を考察する際に、相反する両方の結論がともに成立してしまい、合理的解決が不可能になる状態を指す。プラトンの対話篇では知の限界を露呈させる装置として、デリダ以降は思考の条件として再解釈された。',
+    relatedTerms:['弁証法','ジレンマ','脱構築','ソクラテス','懐疑論'],
+    relatedMovies:['ストーカー (Stalker, タルコフスキー, 1979)','メランコリア (Melancholia, トリアー, 2011)','サクリファイス (The Sacrifice, タルコフスキー, 1986)'],
+    notes:'', viewCount:14
+  },
+  {
+    word:'Wabi-sabi', language:'en', translation:'侘び寂び', spelling:'Wabi-sabi', pronunciation:'/ˌwɑːbi ˈsɑːbi/',
+    category:'美学', tags:['ZOCCON'],
+    meaningSimple:'欠けたり古びたりしたものに、完璧にはない深い美しさを見つける日本の感じ方。',
+    meaningAdult:'不完全さ、儚さ、未完成のものの中に静謐な美を見出す日本独自の美意識。室町以降の茶の湯で精緻化され、永遠でも完全でもない事物の佇まいを肯定する姿勢として広がった。レナード・コーレンの著作以降、欧米でも独自に解釈され続けている。',
+    relatedTerms:['茶の湯','幽玄','侘茶','村田珠光','千利休'],
+    relatedMovies:['ドライブ・マイ・カー (Drive My Car, 濱口竜介, 2021)','歩いても 歩いても (Still Walking, 是枝裕和, 2008)','ペーパー・ムーン (Paper Moon, ボグダノヴィッチ, 1973)'],
+    notes:'', viewCount:6
+  },
+  {
+    word:'Hauntology', language:'en', translation:'ハウントロジー', spelling:'Hauntology', pronunciation:'/ˈhɔːntɒlədʒi/',
+    category:'文化批評', tags:['tiger bae','private'],
+    meaningSimple:'失われた未来が今もうっすら漂っている、という感覚。「もうないけど、いるみたい」な空気のこと。',
+    meaningAdult:'デリダが『マルクスの亡霊たち』で導入した造語を、マーク・フィッシャーらが文化論に転用。実現しなかった未来の亡霊が現在の文化に取り憑いている状態を指し、Boards of Canada や夢魘的なエレクトロニカ、vaporwave の語り口を理論化する語として定着した。',
+    relatedTerms:['マーク・フィッシャー','ジャック・デリダ','vaporwave','ノスタルジア','ポスト資本主義'],
+    relatedMovies:['Drive (レフン, 2011)','Under the Silver Lake (ミッチェル, 2018)','The Last Black Man in San Francisco (タルボット, 2019)'],
+    notes:'tiger bae の音世界に近いかも。MV制作時の参照点として要再考。', viewCount:18
+  },
+  {
+    word:'Nature Positive', language:'en', translation:'ネイチャーポジティブ', spelling:'Nature Positive', pronunciation:'/ˈneɪtʃər ˈpɒzɪtɪv/',
+    category:'環境', tags:['PwC','SX','竹中工務店'],
+    meaningSimple:'自然を「減らさない」ではなく「増やす」方向へ社会を変えようという考え方。2030年までに自然を回復させる目標。',
+    meaningAdult:'生物多様性の損失を止めるだけでなく、2030年までに自然を純増させることを目指す国際的フレームワーク。2022年の昆明・モントリオール生物多様性枠組で合意され、企業のサステナビリティ報告（TNFD）や脱炭素に並ぶ新たな経営アジェンダとして急速に制度化が進む。',
+    relatedTerms:['TNFD','生物多様性','ネットゼロ','SBTs for Nature','30 by 30'],
+    relatedMovies:['Our Planet (Netflix, 2019)','Kiss the Ground (2020)','The Year Earth Changed (アッテンボロー, 2021)'],
+    notes:'竹中の Nature Positive ブランディングのKGI設計に直結。', viewCount:9
+  },
+  {
+    word:'Blue Carbon', language:'en', translation:'ブルーカーボン', spelling:'Blue Carbon', pronunciation:'/bluː ˈkɑːbən/',
+    category:'環境', tags:['PwC','SX','東急不動産'],
+    meaningSimple:'海の植物（マングローブや海藻、塩生湿地など）が吸収・貯蔵する炭素のこと。森林より速く多く吸う海もある。',
+    meaningAdult:'マングローブ林、海草藻場、塩性湿地など沿岸・海洋生態系が吸収・固定する炭素。陸上の森林に比べて単位面積あたりの貯蔵能力が高く、近年は脱炭素文脈での評価が進む。2023年に日本でも初の Jブルークレジット制度が始動し、藻場再生プロジェクトが認証対象に。',
+    relatedTerms:['ブルーエコノミー','海草藻場','Jブルークレジット','カーボンオフセット','TNFD'],
+    relatedMovies:['Mission Blue (2014)','My Octopus Teacher (2020)','Chasing Coral (2017)'],
+    notes:'勝浦Blue Carbon提案の資料に組み込み済み。', viewCount:11
+  },
+  {
+    word:'Saudade', language:'en', translation:'サウダージ', spelling:'Saudade', pronunciation:'/sɐwˈdadɨ/',
+    category:'感情', tags:['private'],
+    meaningSimple:'もう戻ってこないものを懐かしむ、甘くて少し切ない気持ち。ポルトガル語の言葉。',
+    meaningAdult:'ポルトガル語・ブラジル語に特有の感情語で、不在のものへの郷愁と憧憬が混じり合った説明しがたい甘苦い気分を指す。ファドやボサノヴァの根底に流れ、ペソアやチェット・ベイカーが触れた音楽的・文学的情緒とも重なる。日本語の「もののあはれ」と比較されることが多い。',
+    relatedTerms:['もののあはれ','ファド','ボサノヴァ','ペソア','郷愁'],
+    relatedMovies:['Tabu (ゴメス, 2012)','ハッピー・トゥギャザー (王家衛, 1997)','Lisbon Story (ヴェンダース, 1994)'],
+    notes:'', viewCount:3
+  },
+  {
+    word:'余白', language:'ja', translation:'Negative space', spelling:'', pronunciation:'',
+    category:'美学', tags:['ZOCCON','private'],
+    meaningSimple:'絵や文章で「何もないところ」が、ある部分と同じくらい意味を持つこと。',
+    meaningAdult:'東アジアの絵画・書・庭園で重んじられる、敢えて描かない・置かない空間の美学。墨絵の白、能舞台、間の取り方など、不在によって全体の意味を立ち上げる作法を指す。西洋デザインの「ネガティブスペース」とも通じるが、こちらは思想的・倫理的含意がより深い。',
+    relatedTerms:['間','ネガティブスペース','墨絵','枯山水','雪舟'],
+    relatedMovies:['切腹 (小林正樹, 1962)','東京物語 (小津安二郎, 1953)','ある精肉店のはなし (纐纈あや, 2013)'],
+    notes:'ZOCCONの誌面構成原理として常に意識している。', viewCount:7
+  }
+];
+
+function loadSamples(){
+  var now = Date.now();
+  SAMPLE_ENTRIES.forEach(function(s, idx){
+    var e = {
+      id: uid(),
+      word: s.word, language: s.language, translation: s.translation,
+      spelling: s.spelling, pronunciation: s.pronunciation,
+      category: s.category, meaningSimple: s.meaningSimple, meaningAdult: s.meaningAdult,
+      relatedTerms: s.relatedTerms, relatedMovies: s.relatedMovies, notes: s.notes,
+      tags: s.tags || [],
+      viewCount: s.viewCount || 0,
+      lastViewedAt: s.viewCount > 0 ? (now - idx * 86400000) : 0,
+      createdAt: now - (idx * 86400000),
+      updatedAt: now - (idx * 86400000)
+    };
+    state.entries.push(e);
+  });
+  saveAll();
+  render();
+  showToast('7件のサンプルを読み込みました');
+}
+
+// ---------- API ----------
+async function fetchEntry(word){
+  var prompt =
+    'You are filling out a personal Japanese dictionary entry for the word: "' + word + '"\n\n' +
+    'First, detect whether the input language is Japanese or English.\n\n' +
+    'Return ONLY a single JSON object. No preamble, no markdown code fences, no commentary.\n\n' +
+    'Structure:\n' +
+    '{\n' +
+    '  "language": "ja" or "en",\n' +
+    '  "word": "the word as entered",\n' +
+    '  "translation": "translation in the OTHER language",\n' +
+    '  "spelling": "if input is English, repeat spelling; if Japanese, empty",\n' +
+    '  "pronunciation": "if input is English, IPA like /ɪɡˈzæmpl/; if Japanese, empty",\n' +
+    '  "category": "best single Japanese category, e.g. 哲学, 芸術, 科学, 人物, 概念, 文学, 歴史, 心理, 経済, 技術, 環境, 食 etc.",\n' +
+    '  "meaningSimple": "Japanese explanation for a middle schooler. 60-120 chars, vivid and concrete.",\n' +
+    '  "meaningAdult": "Japanese adult-level explanation with nuance, context, etymology. 180-280 chars.",\n' +
+    '  "relatedTerms": ["4-6 related concepts, mostly Japanese"],\n' +
+    '  "relatedMovies": ["3-5 films related. Format: 邦題 (英題, 監督, 年)"]\n' +
+    '}\n\n' +
+    'All explanations and category in Japanese. Output the JSON only.';
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens: 2500,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  console.log('API status:', res.status);
+  if(!res.ok){
+    var errText = '';
+    try{ errText = await res.text(); }catch(e){}
+    throw new Error('API ' + res.status + (errText ? ': ' + errText.slice(0,100) : ''));
+  }
+  var data = await res.json();
+  console.log('API data:', data);
+  if(data && data.type === 'error') throw new Error('API: ' + (data.error && data.error.message || 'unknown'));
+  if(!data || !Array.isArray(data.content)) throw new Error('No content blocks');
+  var textBlocks = data.content.filter(function(c){ return c.type === 'text'; });
+  if(textBlocks.length === 0) throw new Error('No text blocks');
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  console.log('API text:', fullText);
+  var parsed = extractJSON(fullText);
+  if(!parsed) throw new Error('JSON抽出失敗: ' + fullText.slice(0,80));
+  return parsed;
+}
+
+// ---------- ADD ----------
+async function addEntry(){
+  var input = document.getElementById('addInput');
+  var btn = document.getElementById('addBtn');
+  var raw = input.value.trim();
+  if(!raw) return;
+  var dup = state.entries.find(function(e){
+    return (e.word || '').trim().toLowerCase() === raw.toLowerCase();
+  });
+  if(dup){ showToast('「' + raw + '」は既にあります'); openDetail(dup.id); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-style:italic;font-family:Newsreader,serif;">searching</span>';
+  renderLoading(raw);
+
+  try{
+    var data = await fetchEntry(raw);
+    var entry = {
+      id: uid(),
+      word: data.word || raw,
+      language: data.language || (isJapanese(raw) ? 'ja' : 'en'),
+      translation: data.translation || '',
+      spelling: data.spelling || '',
+      pronunciation: data.pronunciation || '',
+      category: data.category || '未分類',
+      meaningSimple: data.meaningSimple || '',
+      meaningAdult: data.meaningAdult || '',
+      relatedTerms: Array.isArray(data.relatedTerms) ? data.relatedTerms : [],
+      relatedMovies: Array.isArray(data.relatedMovies) ? data.relatedMovies : [],
+      notes: '',
+      tags: [],
+      viewCount: 0,
+      lastViewedAt: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    state.entries.unshift(entry);
+    await saveAll();
+    input.value = '';
+    render();
+    openDetail(entry.id);
+    showToast('Added — ' + entry.word);
+  }catch(err){
+    console.error('addEntry err', err);
+    showToast('Error: ' + (err.message || 'unknown'));
+    render();
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = 'Add <span class="arrow">→</span>';
+  }
+}
+
+function renderLoading(word){
+  document.getElementById('entries').innerHTML =
+    '<div class="loading">' +
+      '<div class="l-word">' + escapeHTML(word) + '</div>' +
+      '<div class="l-msg">' +
+        '<span>Searching</span>' +
+        '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>' +
+      '</div>' +
+    '</div>';
+}
+
+// ---------- FILTER ----------
+function getFilteredEntries(){
+  var list = state.entries.slice();
+  if(state.filter.category !== 'all'){
+    list = list.filter(function(e){ return e.category === state.filter.category; });
+  }
+  if(state.filter.tags.length > 0){
+    list = list.filter(function(e){
+      var et = e.tags || [];
+      return state.filter.tags.some(function(t){ return et.indexOf(t) !== -1; });
+    });
+  }
+  var q = state.filter.search.trim().toLowerCase();
+  if(q){
+    list = list.filter(function(e){
+      var hay = [e.word, e.translation, e.category, e.meaningSimple,
+                 e.meaningAdult, (e.relatedTerms||[]).join(' '),
+                 (e.tags||[]).join(' '), e.notes].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+  switch(state.filter.sort){
+    case 'oldest': list.sort(function(a,b){ return a.createdAt - b.createdAt; }); break;
+    case 'az': list.sort(function(a,b){ return (a.word||'').localeCompare(b.word||''); }); break;
+    case 'za': list.sort(function(a,b){ return (b.word||'').localeCompare(a.word||''); }); break;
+    case 'mostread': list.sort(function(a,b){ return (b.viewCount||0) - (a.viewCount||0); }); break;
+    default: list.sort(function(a,b){ return b.createdAt - a.createdAt; });
+  }
+  return list;
+}
+
+// ---------- RENDER ----------
+function renderCatPills(){
+  var el = document.getElementById('catPills');
+  var counts = {};
+  state.entries.forEach(function(e){
+    var c = e.category || '未分類';
+    counts[c] = (counts[c] || 0) + 1;
+  });
+  var cats = Object.keys(counts).sort();
+  var html =
+    '<button class="pill ' + (state.filter.category === 'all' ? 'active' : '') + '" data-cat="all">' +
+      '<span class="pill-dot" style="background:var(--ink);"></span>' +
+      'All <span class="pill-count">' + state.entries.length + '</span>' +
+    '</button>';
+  cats.forEach(function(c){
+    html +=
+      '<button class="pill ' + (state.filter.category === c ? 'active' : '') + '" data-cat="' + escapeHTML(c) + '">' +
+        '<span class="pill-dot" style="background:' + colorFor(c) + ';"></span>' +
+        escapeHTML(c) + ' <span class="pill-count">' + counts[c] + '</span>' +
+      '</button>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.pill').forEach(function(b){
+    b.addEventListener('click', function(){
+      state.filter.category = b.getAttribute('data-cat');
+      render();
+    });
+  });
+}
+
+function renderTagPills(){
+  var el = document.getElementById('tagPills');
+  var all = getAllTags();
+  if(all.length === 0){ el.innerHTML = '<span style="font-family:Newsreader,serif;font-style:italic;color:var(--ink-mute);font-size:13px;">タグは詳細パネルで追加できます</span>'; return; }
+  var html = '';
+  all.forEach(function(tag){
+    var g = getTagGroup(tag);
+    var count = getTagCount(tag);
+    var active = state.filter.tags.indexOf(tag) !== -1;
+    html += '<span class="tag tag-' + g + (active ? ' active-filter' : '') + '" data-tag="' + escapeHTML(tag) + '">' +
+      escapeHTML(tag) +
+      '<span class="tag-count">' + count + '</span>' +
+    '</span>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.tag').forEach(function(t){
+    t.addEventListener('click', function(){
+      var name = t.getAttribute('data-tag');
+      var idx = state.filter.tags.indexOf(name);
+      if(idx === -1) state.filter.tags.push(name);
+      else state.filter.tags.splice(idx, 1);
+      render();
+    });
+  });
+}
+
+function renderEntries(){
+  var el = document.getElementById('entries');
+  var list = getFilteredEntries();
+  document.getElementById('countNum').textContent = state.entries.length;
+
+  if(state.entries.length === 0){
+    el.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="deco">·</div>' +
+        '<div class="msg">The collection is empty.</div>' +
+        '<div class="hint">上の欄に最初の一語を入れるか、まずはサンプルでお試しを。</div>' +
+        '<button class="sample-btn" id="loadSamplesBtn">Load seven samples <span class="arrow">→</span></button>' +
+      '</div>';
+    var sb = document.getElementById('loadSamplesBtn');
+    if(sb) sb.addEventListener('click', loadSamples);
+    return;
+  }
+  if(list.length === 0){
+    el.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="deco">∅</div>' +
+        '<div class="msg">該当する言葉がありません。</div>' +
+        '<div class="hint">絞り込みを変えてみてください。</div>' +
+      '</div>';
+    return;
+  }
+  var html = '';
+  list.forEach(function(e, i){
+    var num = ('000' + (i + 1)).slice(-3);
+    var color = colorFor(e.category);
+    var delay = Math.min(i * 0.035, 0.4);
+    var pron = '';
+    if(e.language === 'en' && e.pronunciation){
+      pron = '<div class="entry-pron">' + escapeHTML(e.pronunciation) + '</div>';
+    }
+    var wordClass = isJapanese(e.word) ? 'entry-word ja' : 'entry-word';
+    var tagsHTML = '';
+    if(e.tags && e.tags.length){
+      tagsHTML = '<div class="entry-tags">';
+      e.tags.slice(0, 4).forEach(function(t){
+        tagsHTML += '<span class="tag tag-' + getTagGroup(t) + '">' + escapeHTML(t) + '</span>';
+      });
+      if(e.tags.length > 4) tagsHTML += '<span class="tag tag-other">+' + (e.tags.length - 4) + '</span>';
+      tagsHTML += '</div>';
+    }
+    html +=
+      '<div class="entry" data-id="' + e.id + '" style="animation-delay:' + delay + 's;">' +
+        '<div class="entry-head">' +
+          '<span class="entry-num">№ ' + num + '</span>' +
+          '<span class="entry-cat">' +
+            '<span class="cat-dot" style="background:' + color + ';"></span>' +
+            escapeHTML(e.category || '未分類') +
+          '</span>' +
+        '</div>' +
+        '<div class="' + wordClass + '">' + escapeHTML(e.word) + '</div>' +
+        (e.translation ? '<div class="entry-translation">' + escapeHTML(e.translation) + '</div>' : '') +
+        pron +
+        (e.meaningSimple ? '<div class="entry-snippet">' + escapeHTML(e.meaningSimple) + '</div>' : '') +
+        tagsHTML +
+        '<div class="entry-foot">' +
+          viewIntensityHTML(e.viewCount || 0) +
+          '<span class="read">read →</span>' +
+        '</div>' +
+      '</div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.entry').forEach(function(card){
+    card.addEventListener('click', function(){
+      openDetail(card.getAttribute('data-id'));
+    });
+  });
+}
+
+function render(){
+  renderCatPills();
+  renderTagPills();
+  renderEntries();
+}
+
+// ---------- DETAIL ----------
+function openDetail(id){
+  var entry = state.entries.find(function(e){ return e.id === id; });
+  if(!entry) return;
+  state.activeId = id;
+
+  // increment view count
+  entry.viewCount = (entry.viewCount || 0) + 1;
+  entry.lastViewedAt = Date.now();
+  queueSave();
+
+  var body = document.getElementById('panelBody');
+  var color = colorFor(entry.category);
+
+  var pronHTML = '';
+  if(entry.language === 'en' && (entry.spelling || entry.pronunciation)){
+    var parts = '';
+    if(entry.spelling) parts += '<span class="spelling">' + escapeHTML(entry.spelling) + '</span>';
+    if(entry.spelling && entry.pronunciation) parts += '   ';
+    if(entry.pronunciation) parts += escapeHTML(entry.pronunciation);
+    pronHTML = '<div class="panel-pron">' + parts + '</div>';
+  }
+
+  var wordClass = isJapanese(entry.word) ? 'panel-word ja' : 'panel-word';
+
+  // view count display
+  var viewsBlock =
+    '<div class="panel-views">' +
+      '<div class="pv-stack">' +
+        '<div class="pv-label">これまで開いた回数</div>' +
+        '<div class="pv-num">' + (entry.viewCount || 0) + '</div>' +
+      '</div>' +
+      '<span class="interest-tag">' + interestLabel(entry.viewCount) + '</span>' +
+      (entry.lastViewedAt ? '<span class="pv-last">last ' + formatDate(entry.lastViewedAt) + '</span>' : '') +
+    '</div>';
+
+  // tags section
+  var allTags = getAllTags();
+  var tagsHTML = '<div class="section">' +
+    '<div class="section-label">Tags</div>' +
+    '<div class="panel-tags-list">';
+  allTags.forEach(function(t){
+    var g = getTagGroup(t);
+    var active = (entry.tags || []).indexOf(t) !== -1;
+    tagsHTML += '<span class="tag tag-' + g + (active ? '' : ' outline') + '" data-toggle-tag="' + escapeHTML(t) + '">' +
+      escapeHTML(t) +
+      (active ? '<span class="tag-x">×</span>' : '') +
+    '</span>';
+  });
+  tagsHTML += '</div>' +
+    '<div class="new-tag-row">' +
+      '<input type="text" class="new-tag-input" id="newTagInput" placeholder="新しいタグ名" />' +
+      '<button class="new-tag-btn work" id="newTagWork">+ work</button>' +
+      '<button class="new-tag-btn private" id="newTagPrivate">+ private</button>' +
+    '</div>' +
+  '</div>';
+
+  var relTermsHTML = '';
+  if(entry.relatedTerms && entry.relatedTerms.length){
+    relTermsHTML = '<div class="related-list">';
+    entry.relatedTerms.forEach(function(t){
+      relTermsHTML += '<span class="related-item" data-term="' + escapeHTML(t) + '">' + escapeHTML(t) + '</span>';
+    });
+    relTermsHTML += '</div>';
+  }
+  var moviesHTML = '';
+  if(entry.relatedMovies && entry.relatedMovies.length){
+    moviesHTML = '<ul class="movie-list">';
+    entry.relatedMovies.forEach(function(m){
+      var url = filmarksSearchURL(m);
+      moviesHTML += '<li><a href="' + url + '" target="_blank" rel="noopener noreferrer" class="film-link">' + escapeHTML(m) + ' <span class="film-go">→ Filmarks</span></a></li>';
+    });
+    moviesHTML += '</ul>';
+    if(settings.filmarksUser){
+      moviesHTML += '<div class="filmarks-user-link"><a href="https://filmarks.com/users/' + encodeURIComponent(settings.filmarksUser) + '" target="_blank" rel="noopener noreferrer">→ あなたのFilmarksプロフィール (@' + escapeHTML(settings.filmarksUser) + ')</a></div>';
+    }
+  }
+
+  body.innerHTML =
+    '<div class="' + wordClass + '">' + escapeHTML(entry.word) + '</div>' +
+    (entry.translation ? '<div class="panel-trans">' + escapeHTML(entry.translation) + '</div>' : '') +
+    pronHTML +
+    viewsBlock +
+    '<div class="panel-cat-row">' +
+      '<input type="text" class="cat-input" id="catInput" value="' + escapeHTML(entry.category || '') + '" maxlength="20" style="border-color:' + color + ';color:' + color + ';">' +
+      '<span class="cat-edit-hint">tap to edit category</span>' +
+    '</div>' +
+    tagsHTML +
+    (entry.meaningSimple ?
+      '<div class="section simple">' +
+        '<div class="section-label">For a younger reader</div>' +
+        '<div class="section-content">' + escapeHTML(entry.meaningSimple) + '</div>' +
+      '</div>' : '') +
+    (entry.meaningAdult ?
+      '<div class="section">' +
+        '<div class="section-label">In full</div>' +
+        '<div class="section-content">' + escapeHTML(entry.meaningAdult) + '</div>' +
+      '</div>' : '') +
+    (relTermsHTML ?
+      '<div class="section">' +
+        '<div class="section-label">Related terms</div>' +
+        relTermsHTML +
+      '</div>' : '') +
+    (moviesHTML ?
+      '<div class="section">' +
+        '<div class="section-label">Related films</div>' +
+        moviesHTML +
+      '</div>' : '') +
+    '<div class="section">' +
+      '<div class="section-label">Notes</div>' +
+      '<textarea class="notes-area" id="notesArea" placeholder="自由に書き込めます — 出典、引用、自分の考え、出会った場面…">' + escapeHTML(entry.notes || '') + '</textarea>' +
+    '</div>' +
+    '<div class="panel-foot">' +
+      '<div class="foot-meta">' +
+        'Added ' + formatDate(entry.createdAt) +
+        (entry.updatedAt && entry.updatedAt !== entry.createdAt ? '  ·  Updated ' + formatDate(entry.updatedAt) : '') +
+      '</div>' +
+      '<button class="delete-btn" id="deleteBtn">Delete</button>' +
+    '</div>';
+
+  // wire up events
+  document.getElementById('catInput').addEventListener('change', function(ev){
+    var newCat = ev.target.value.trim() || '未分類';
+    entry.category = newCat;
+    entry.updatedAt = Date.now();
+    queueSave();
+    render();
+    showToast('Category updated');
+    var nc = colorFor(newCat);
+    ev.target.style.borderColor = nc;
+    ev.target.style.color = nc;
+  });
+
+  // tag toggle
+  body.querySelectorAll('[data-toggle-tag]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var t = el.getAttribute('data-toggle-tag');
+      if(!entry.tags) entry.tags = [];
+      var idx = entry.tags.indexOf(t);
+      if(idx === -1) entry.tags.push(t);
+      else entry.tags.splice(idx, 1);
+      entry.updatedAt = Date.now();
+      queueSave();
+      openDetail(entry.id); // re-render panel
+      renderTagPills();
+      renderEntries();
+    });
+  });
+  // new tag buttons
+  function handleNewTag(group){
+    var inp = document.getElementById('newTagInput');
+    var name = inp.value.trim();
+    if(!name) return;
+    if(addNewTag(name, group)){
+      if(!entry.tags) entry.tags = [];
+      entry.tags.push(name);
+      entry.updatedAt = Date.now();
+      queueSave();
+      inp.value = '';
+      openDetail(entry.id);
+      renderTagPills();
+      renderEntries();
+      showToast('タグ「' + name + '」を追加');
+    }
+  }
+  document.getElementById('newTagWork').addEventListener('click', function(){ handleNewTag('work'); });
+  document.getElementById('newTagPrivate').addEventListener('click', function(){ handleNewTag('private'); });
+  document.getElementById('newTagInput').addEventListener('keydown', function(ev){
+    if(ev.key === 'Enter'){
+      ev.preventDefault();
+      handleNewTag('private'); // default to private on enter
+    }
+  });
+
+  // notes auto-save
+  var notesEl = document.getElementById('notesArea');
+  var notesTimer = null;
+  notesEl.addEventListener('input', function(){
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(function(){
+      entry.notes = notesEl.value;
+      entry.updatedAt = Date.now();
+      queueSave();
+      showToast('Notes saved');
+    }, 700);
+  });
+
+  // related term jump
+  body.querySelectorAll('.related-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      var term = item.getAttribute('data-term');
+      var existing = state.entries.find(function(e){
+        return (e.word || '').trim().toLowerCase() === term.toLowerCase();
+      });
+      if(existing){ openDetail(existing.id); }
+      else{
+        document.getElementById('addInput').value = term;
+        closeDetail();
+        document.getElementById('addInput').focus();
+        showToast('「' + term + '」— Addで追加できます');
+      }
+    });
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', function(){
+    if(confirm('「' + entry.word + '」を削除しますか？')){
+      state.entries = state.entries.filter(function(e){ return e.id !== entry.id; });
+      saveAll();
+      closeDetail();
+      render();
+      showToast('Deleted');
+    }
+  });
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // update the cards' view counts visible
+  renderEntries();
+}
+
+function closeDetail(){
+  state.activeId = null;
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ---------- EXPORT / IMPORT ----------
+function exportData(){
+  var data = JSON.stringify({
+    entries: state.entries,
+    tagGroups: state.tagGroups,
+    version: 2
+  }, null, 2);
+  var blob = new Blob([data], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-dictionary-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Exported');
+}
+function importData(file){
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var parsed = JSON.parse(ev.target.result);
+      var newEntries = Array.isArray(parsed) ? parsed : (parsed.entries || []);
+      if(!Array.isArray(newEntries)) throw new Error('format');
+      if(confirm('既存' + state.entries.length + '件に' + newEntries.length + '件を統合？（単語名重複は除外）')){
+        var existingWords = state.entries.map(function(e){ return (e.word||'').toLowerCase(); });
+        newEntries.forEach(function(e){
+          if(!e.id) e.id = uid();
+          if(existingWords.indexOf((e.word||'').toLowerCase()) === -1){
+            state.entries.push(e);
+          }
+        });
+        if(parsed.tagGroups){
+          (parsed.tagGroups.work || []).forEach(function(t){
+            if(state.tagGroups.work.indexOf(t) === -1) state.tagGroups.work.push(t);
+          });
+          (parsed.tagGroups.private || []).forEach(function(t){
+            if(state.tagGroups.private.indexOf(t) === -1) state.tagGroups.private.push(t);
+          });
+        }
+        saveAll();
+        render();
+        showToast('Imported');
+      }
+    }catch(err){ showToast('Import failed'); console.error(err); }
+  };
+  reader.readAsText(file);
+}
+
+// ---------- EVENTS ----------
+document.getElementById('addBtn').addEventListener('click', addEntry);
+document.getElementById('addInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') addEntry();
+});
+document.getElementById('searchFilter').addEventListener('input', function(e){
+  state.filter.search = e.target.value;
+  renderEntries();
+});
+document.getElementById('sortSelect').addEventListener('change', function(e){
+  state.filter.sort = e.target.value;
+  renderEntries();
+});
+document.getElementById('panelClose').addEventListener('click', closeDetail);
+document.getElementById('overlay').addEventListener('click', closeDetail);
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && state.activeId) closeDetail();
+});
+document.getElementById('exportBtn').addEventListener('click', exportData);
+document.getElementById('importBtn').addEventListener('click', function(){
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', function(e){
+  if(e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = '';
+});
+
+// ---------- MAP VIEW (interest visualization) ----------
+function renderMap(){
+  var svg = d3.select('#mapSvg');
+  svg.selectAll('*').remove();
+
+  var statsEl = document.getElementById('mapStats');
+  var narrativeEl = document.getElementById('mapNarrative');
+  var legendEl = document.getElementById('mapLegend');
+  var barsEl = document.getElementById('mapCategoryBars');
+
+  if(state.entries.length === 0){
+    statsEl.innerHTML = '';
+    narrativeEl.innerHTML = '';
+    legendEl.innerHTML = '';
+    barsEl.innerHTML = '';
+    svg.append('foreignObject').attr('x',0).attr('y',0).attr('width','100%').attr('height','100%')
+       .append('xhtml:div').attr('class','map-empty').text('まだ言葉がありません。Collection に戻って追加してください。');
+    return;
+  }
+
+  // ---- stats
+  var n = state.entries.length;
+  var cats = {};
+  state.entries.forEach(function(e){
+    var c = e.category || '未分類';
+    if(!cats[c]) cats[c] = {count:0, views:0, words:[]};
+    cats[c].count++;
+    cats[c].views += (e.viewCount || 0);
+    cats[c].words.push(e);
+  });
+  var catNames = Object.keys(cats);
+  var totalViews = state.entries.reduce(function(s,e){ return s + (e.viewCount || 0); }, 0);
+  var avgPerCat = n / catNames.length;
+  var avgViews = totalViews / n;
+  var maxViews = d3.max(state.entries, function(e){ return e.viewCount || 0; }) || 0;
+
+  statsEl.innerHTML =
+    '<div class="map-stat"><div class="ms-label">単語数</div><div class="ms-value">' + n + '</div></div>' +
+    '<div class="map-stat"><div class="ms-label">カテゴリ</div><div class="ms-value">' + catNames.length + '</div></div>' +
+    '<div class="map-stat"><div class="ms-label">総閲覧</div><div class="ms-value">' + totalViews + '</div></div>' +
+    '<div class="map-stat"><div class="ms-label">平均閲覧</div><div class="ms-value">' + avgViews.toFixed(1) + '<span class="ms-unit">/語</span></div></div>' +
+    '<div class="map-stat"><div class="ms-label">最大</div><div class="ms-value">' + maxViews + '<span class="ms-unit">回</span></div></div>';
+
+  // ---- narrative (depth × breadth)
+  var narrative;
+  var em1 = '', em2 = '';
+  if(avgPerCat >= 4 && avgViews >= 6){
+    em1 = '深く広く'; em2 = '掘り進めながら、視野も広い';
+  } else if(avgPerCat >= 4){
+    em1 = '広く浅く'; em2 = '色々なものに出会っている時期';
+  } else if(avgViews >= 6){
+    em1 = '深く狭く'; em2 = '少数の対象に強く惹かれている';
+  } else if(n < 10){
+    em1 = '探索のはじまり'; em2 = 'これから形が見えてくる';
+  } else {
+    em1 = 'ゆっくり広がる'; em2 = '気になる範囲を慎重に増やしている';
+  }
+  narrative =
+    '今のあなたの関心は <span class="em">' + em1 + '</span>。' +
+    n + ' 語が ' + catNames.length + ' のカテゴリに散らばり、平均で ' + avgViews.toFixed(1) + ' 回ずつ読み返している。' +
+    em2 + '。';
+  narrativeEl.innerHTML = narrative;
+
+  // ---- D3 bubble chart
+  var width = document.querySelector('.map-svg-wrap').getBoundingClientRect().width;
+  var height = 640;
+
+  svg.attr('viewBox', '0 0 ' + width + ' ' + height);
+
+  // gradient defs for "立体" feel
+  var defs = svg.append('defs');
+  catNames.forEach(function(c, i){
+    var col = catColorHex(c);
+    var g = defs.append('radialGradient').attr('id', 'g-' + i).attr('cx','30%').attr('cy','30%').attr('r','75%');
+    g.append('stop').attr('offset','0%').attr('stop-color', lighten(col, 0.35));
+    g.append('stop').attr('offset','100%').attr('stop-color', col);
+  });
+  // shadow filter
+  var filter = defs.append('filter').attr('id','bubbleShadow').attr('x','-50%').attr('y','-50%').attr('width','200%').attr('height','200%');
+  filter.append('feGaussianBlur').attr('in','SourceAlpha').attr('stdDeviation',2);
+  filter.append('feOffset').attr('dx',0).attr('dy',1.5).attr('result','offsetblur');
+  filter.append('feComponentTransfer').append('feFuncA').attr('type','linear').attr('slope',0.25);
+  var merge = filter.append('feMerge');
+  merge.append('feMergeNode');
+  merge.append('feMergeNode').attr('in','SourceGraphic');
+
+  // category cluster centers
+  var catIndexMap = {};
+  catNames.forEach(function(c, i){ catIndexMap[c] = i; });
+
+  function clusterX(d){
+    var i = catIndexMap[d.category] || 0;
+    // arrange in a rough horizontal flow
+    var perRow = Math.max(2, Math.ceil(Math.sqrt(catNames.length)));
+    var col = i % perRow;
+    return (width * (col + 0.5) / perRow);
+  }
+  function clusterY(d){
+    var i = catIndexMap[d.category] || 0;
+    var perRow = Math.max(2, Math.ceil(Math.sqrt(catNames.length)));
+    var row = Math.floor(i / perRow);
+    var rows = Math.ceil(catNames.length / perRow);
+    return (height * (row + 0.5) / rows);
+  }
+
+  // bubble radius — square root scaling for unbounded view counts
+  function radius(d){
+    var v = d.viewCount || 0;
+    return 14 + Math.sqrt(v) * 4.5; // 0 views → 14, 4 → 23, 25 → 36.5, 100 → 59
+  }
+
+  // nodes
+  var nodes = state.entries.map(function(e){
+    return {
+      id: e.id,
+      word: e.word,
+      translation: e.translation,
+      category: e.category || '未分類',
+      viewCount: e.viewCount || 0,
+      _r: 14 + Math.sqrt(e.viewCount || 0) * 4.5,
+      x: width/2 + (Math.random()-0.5)*20,
+      y: height/2 + (Math.random()-0.5)*20
+    };
+  });
+
+  var sim = d3.forceSimulation(nodes)
+    .force('x', d3.forceX(clusterX).strength(0.18))
+    .force('y', d3.forceY(clusterY).strength(0.18))
+    .force('collide', d3.forceCollide(function(d){ return d._r + 2.5; }).strength(0.9))
+    .force('charge', d3.forceManyBody().strength(-8))
+    .alpha(0.9).alphaDecay(0.025);
+
+  // category cluster labels
+  var labelGroup = svg.append('g').attr('class','cat-labels');
+  catNames.forEach(function(c, i){
+    var n0 = {category:c};
+    var x = clusterX(n0);
+    var y = clusterY(n0);
+    labelGroup.append('text')
+      .attr('x', x)
+      .attr('y', y - 90)
+      .attr('text-anchor','middle')
+      .attr('font-family','IBM Plex Sans, Noto Sans JP, sans-serif')
+      .attr('font-size', 10)
+      .attr('font-weight', 500)
+      .attr('letter-spacing', '0.2em')
+      .attr('fill', '#8E8C88')
+      .attr('text-transform','uppercase')
+      .text(c.toUpperCase());
+  });
+
+  var tooltip = document.getElementById('mapTooltip');
+
+  var node = svg.append('g').attr('class','bubbles').selectAll('g')
+    .data(nodes).enter()
+    .append('g')
+    .style('cursor','pointer')
+    .on('mouseenter', function(ev, d){
+      tooltip.innerHTML = '<div class="tt-word">' + escapeHTML(d.word) + '</div>' +
+        '<div>' + escapeHTML(d.translation || '') + '</div>' +
+        '<div class="tt-meta">' + escapeHTML(d.category) + ' · 読 × ' + d.viewCount + '</div>';
+      tooltip.classList.add('show');
+    })
+    .on('mousemove', function(ev){
+      var rect = document.querySelector('.map-svg-wrap').getBoundingClientRect();
+      tooltip.style.left = (ev.clientX - rect.left + 14) + 'px';
+      tooltip.style.top  = (ev.clientY - rect.top + 14) + 'px';
+    })
+    .on('mouseleave', function(){ tooltip.classList.remove('show'); })
+    .on('click', function(ev, d){ openDetail(d.id); });
+
+  node.append('circle')
+    .attr('r', function(d){ return d._r; })
+    .attr('fill', function(d){
+      var idx = catIndexMap[d.category] || 0;
+      return 'url(#g-' + idx + ')';
+    })
+    .attr('stroke', function(d){ return catColorHex(d.category); })
+    .attr('stroke-width', 0.5)
+    .attr('opacity', 0.92)
+    .attr('filter','url(#bubbleShadow)');
+
+  // word label for larger bubbles
+  node.append('text')
+    .attr('text-anchor','middle')
+    .attr('dy', '0.35em')
+    .attr('font-family', function(d){ return isJapanese(d.word) ? 'Noto Serif JP, Newsreader, serif' : 'Newsreader, serif'; })
+    .attr('font-style', function(d){ return isJapanese(d.word) ? 'normal' : 'italic'; })
+    .attr('font-weight', 600)
+    .attr('font-size', function(d){ return Math.max(9, Math.min(d._r/2.2, 18)); })
+    .attr('fill', '#FFFFFF')
+    .attr('pointer-events','none')
+    .text(function(d){
+      if(d._r < 22) return '';
+      var w = d.word;
+      var maxLen = Math.floor(d._r / 4.5);
+      return w.length > maxLen ? w.slice(0, maxLen-1) + '…' : w;
+    });
+
+  sim.on('tick', function(){
+    node.attr('transform', function(d){ return 'translate(' + d.x + ',' + d.y + ')'; });
+  });
+
+  // ---- legend
+  var legendHTML = '';
+  catNames.forEach(function(c){
+    var col = catColorHex(c);
+    legendHTML += '<span class="legend-item">' +
+      '<span class="legend-dot" style="background:' + col + ';"></span>' +
+      escapeHTML(c) +
+      ' <span class="legend-count">' + cats[c].count + '・読' + cats[c].views + '</span>' +
+    '</span>';
+  });
+  legendEl.innerHTML = legendHTML;
+
+  // ---- category bar chart
+  var sortedCats = catNames.slice().sort(function(a,b){ return cats[b].views - cats[a].views; });
+  var maxCatViews = Math.max.apply(null, sortedCats.map(function(c){ return cats[c].views; })) || 1;
+  var barsHTML = '';
+  sortedCats.forEach(function(c){
+    var col = catColorHex(c);
+    var pct = (cats[c].views / maxCatViews) * 100;
+    barsHTML +=
+      '<div class="bar-row">' +
+        '<div class="br-name"><span class="legend-dot" style="background:' + col + ';"></span>' + escapeHTML(c) + '</div>' +
+        '<div class="br-bar"><span style="width:' + pct + '%;background:' + col + ';"></span></div>' +
+        '<div class="br-val">' + cats[c].count + '語 · 読' + cats[c].views + '</div>' +
+      '</div>';
+  });
+  barsEl.innerHTML = barsHTML;
+}
+
+// helpers for map colors
+function catColorHex(cat){
+  var palette = ['#8B2932','#B8862B','#6B7438','#455A75','#5E3A5C','#355E3B','#B45236','#2C3E50','#7A5C3A','#4A6670'];
+  if(!cat) return '#1A1A1A';
+  return palette[hashStr(cat) % palette.length];
+}
+function lighten(hex, amt){
+  // simple lighten: blend toward white by amt
+  var c = hex.replace('#','');
+  var r = parseInt(c.substr(0,2),16);
+  var g = parseInt(c.substr(2,2),16);
+  var b = parseInt(c.substr(4,2),16);
+  r = Math.round(r + (255-r)*amt);
+  g = Math.round(g + (255-g)*amt);
+  b = Math.round(b + (255-b)*amt);
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+// ---------- VIEW SWITCH ----------
+function switchView(name){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.view-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-view') === name);
+  });
+  if(name === 'map'){
+    setTimeout(renderMap, 50); // wait for layout
+  }
+}
+
+// ---------- GITHUB GIST SYNC ----------
+var GIST_FILENAME = 'my-dictionary.json';
+
+async function githubPull(){
+  if(!settings.githubToken || !settings.githubGistId) return null;
+  var res = await fetch('https://api.github.com/gists/' + settings.githubGistId, {
+    headers: {
+      'Authorization': 'token ' + settings.githubToken,
+      'Accept': 'application/vnd.github+json'
+    }
+  });
+  if(!res.ok){
+    var t = '';
+    try{ t = await res.text(); }catch(e){}
+    throw new Error('GitHub ' + res.status + (t ? ': ' + t.slice(0,80) : ''));
+  }
+  var data = await res.json();
+  var file = data.files && data.files[GIST_FILENAME];
+  if(!file) throw new Error('Gist にファイル "' + GIST_FILENAME + '" が見つかりません');
+  try{
+    return JSON.parse(file.content);
+  }catch(e){
+    throw new Error('Gist の中身が JSON ではありません');
+  }
+}
+
+async function githubPush(){
+  if(!settings.githubToken) return;
+  var payload = {
+    entries: state.entries,
+    tagGroups: state.tagGroups,
+    version: 3,
+    updatedAt: Date.now()
+  };
+  var content = JSON.stringify(payload, null, 2);
+  if(settings.githubGistId){
+    // update existing
+    var res = await fetch('https://api.github.com/gists/' + settings.githubGistId, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'token ' + settings.githubToken,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        files: { [GIST_FILENAME]: { content: content } }
+      })
+    });
+    if(!res.ok){
+      var t1 = '';
+      try{ t1 = await res.text(); }catch(e){}
+      throw new Error('Gist 更新 ' + res.status + (t1 ? ': ' + t1.slice(0,80) : ''));
+    }
+  } else {
+    throw new Error('Gist ID が設定されていません。先に「新規 Gist を作成」を押してください');
+  }
+}
+
+async function githubCreateGist(){
+  if(!settings.githubToken) throw new Error('トークンが必要です');
+  var payload = {
+    entries: state.entries,
+    tagGroups: state.tagGroups,
+    version: 3,
+    updatedAt: Date.now()
+  };
+  var content = JSON.stringify(payload, null, 2);
+  var res = await fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'token ' + settings.githubToken,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      description: 'my-dictionary — personal lexicon data',
+      public: false,
+      files: { [GIST_FILENAME]: { content: content } }
+    })
+  });
+  if(!res.ok){
+    var t2 = '';
+    try{ t2 = await res.text(); }catch(e){}
+    throw new Error('Gist 作成 ' + res.status + (t2 ? ': ' + t2.slice(0,80) : ''));
+  }
+  var data = await res.json();
+  settings.githubGistId = data.id;
+  saveSettings();
+  return data.id;
+}
+
+// ---------- FIREBASE SYNC ----------
+async function firebasePull(){
+  if(!settings.firebaseURL) return null;
+  try{
+    var url = settings.firebaseURL.replace(/\/$/, '') + '.json';
+    var res = await fetch(url);
+    if(!res.ok) throw new Error('Pull ' + res.status);
+    var data = await res.json();
+    return data;
+  }catch(e){
+    console.error('firebasePull', e);
+    throw e;
+  }
+}
+async function firebasePush(){
+  if(!settings.firebaseURL) return;
+  try{
+    var url = settings.firebaseURL.replace(/\/$/, '') + '.json';
+    var res = await fetch(url, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        entries: state.entries,
+        tagGroups: state.tagGroups,
+        version: 3,
+        updatedAt: Date.now()
+      })
+    });
+    if(!res.ok) throw new Error('Push ' + res.status);
+  }catch(e){
+    console.error('firebasePush', e);
+    throw e;
+  }
+}
+
+// hook cloud sync into saveAll (GitHub takes precedence over Firebase)
+var origSaveAll = saveAll;
+saveAll = async function(){
+  await origSaveAll();
+  // GitHub Gist sync (preferred)
+  if(settings.githubToken && settings.githubGistId){
+    try{
+      await githubPush();
+      updateSyncBadge(true);
+      return;
+    }catch(e){
+      console.warn('github push failed:', e.message);
+    }
+  }
+  // Firebase fallback
+  if(settings.firebaseURL){
+    try{
+      await firebasePush();
+      updateSyncBadge(true);
+    }catch(e){
+      console.warn('firebase push failed:', e.message);
+    }
+  }
+};
+
+// ---------- SETTINGS EVENTS ----------
+function wireSettings(){
+  var fInput = document.getElementById('filmarksUserInput');
+  var fbInput = document.getElementById('firebaseURLInput');
+  var ghTokenInput = document.getElementById('ghTokenInput');
+  var ghGistIdInput = document.getElementById('ghGistIdInput');
+  if(fInput) fInput.value = settings.filmarksUser;
+  if(fbInput) fbInput.value = settings.firebaseURL;
+  if(ghTokenInput) ghTokenInput.value = settings.githubToken;
+  if(ghGistIdInput) ghGistIdInput.value = settings.githubGistId;
+
+  var saveBtn = document.getElementById('settingsSaveBtn');
+  if(saveBtn) saveBtn.addEventListener('click', function(){
+    settings.filmarksUser = fInput.value.trim();
+    settings.firebaseURL = fbInput.value.trim();
+    settings.githubToken = ghTokenInput.value.trim();
+    settings.githubGistId = ghGistIdInput.value.trim();
+    saveSettings();
+    showToast('設定を保存しました');
+  });
+
+  // GitHub Gist buttons
+  function flushGhInputs(){
+    settings.githubToken = ghTokenInput.value.trim();
+    settings.githubGistId = ghGistIdInput.value.trim();
+    saveSettings();
+  }
+  var ghCreateBtn = document.getElementById('ghCreateBtn');
+  if(ghCreateBtn) ghCreateBtn.addEventListener('click', async function(){
+    flushGhInputs();
+    if(!settings.githubToken){ showToast('PAT を入力してください'); return; }
+    try{
+      var id = await githubCreateGist();
+      ghGistIdInput.value = id;
+      showToast('✓ Gist を作成: ' + id.slice(0,8) + '…');
+    }catch(e){
+      showToast('✗ 作成失敗: ' + e.message);
+    }
+  });
+  var ghTestBtn = document.getElementById('ghTestBtn');
+  if(ghTestBtn) ghTestBtn.addEventListener('click', async function(){
+    flushGhInputs();
+    if(!settings.githubToken || !settings.githubGistId){ showToast('Token と Gist ID が必要です'); return; }
+    try{
+      await githubPull();
+      showToast('✓ 接続成功');
+    }catch(e){
+      showToast('✗ 接続失敗: ' + e.message);
+    }
+  });
+  var ghPullBtn = document.getElementById('ghPullBtn');
+  if(ghPullBtn) ghPullBtn.addEventListener('click', async function(){
+    flushGhInputs();
+    try{
+      var data = await githubPull();
+      if(data && Array.isArray(data.entries)){
+        if(confirm('クラウドの' + data.entries.length + '件で現在の' + state.entries.length + '件を上書き？')){
+          state.entries = data.entries;
+          if(data.tagGroups){
+            state.tagGroups.work = data.tagGroups.work || state.tagGroups.work;
+            state.tagGroups.private = data.tagGroups.private || state.tagGroups.private;
+          }
+          await origSaveAll();
+          render();
+          showToast('✓ Gist から読み込みました');
+        }
+      }else{ showToast('Gist にデータがありません'); }
+    }catch(e){ showToast('✗ 読み込み失敗: ' + e.message); }
+  });
+  var ghPushBtn = document.getElementById('ghPushBtn');
+  if(ghPushBtn) ghPushBtn.addEventListener('click', async function(){
+    flushGhInputs();
+    try{
+      await githubPush();
+      showToast('✓ Gist に書き出しました');
+    }catch(e){ showToast('✗ 書き出し失敗: ' + e.message); }
+  });
+
+  // Firebase buttons (unchanged)
+  var testBtn = document.getElementById('syncTestBtn');
+  if(testBtn) testBtn.addEventListener('click', async function(){
+    settings.firebaseURL = fbInput.value.trim();
+    saveSettings();
+    if(!settings.firebaseURL){ showToast('URLを入力してください'); return; }
+    try{
+      await firebasePull();
+      showToast('✓ 接続成功');
+    }catch(e){
+      showToast('✗ 接続失敗: ' + e.message);
+    }
+  });
+
+  var pullBtn = document.getElementById('syncPullBtn');
+  if(pullBtn) pullBtn.addEventListener('click', async function(){
+    settings.firebaseURL = fbInput.value.trim();
+    saveSettings();
+    if(!settings.firebaseURL){ showToast('URLを入力してください'); return; }
+    try{
+      var data = await firebasePull();
+      if(data && Array.isArray(data.entries)){
+        if(confirm('クラウドの' + data.entries.length + '件で現在の' + state.entries.length + '件を上書き？')){
+          state.entries = data.entries;
+          if(data.tagGroups){
+            state.tagGroups.work = data.tagGroups.work || state.tagGroups.work;
+            state.tagGroups.private = data.tagGroups.private || state.tagGroups.private;
+          }
+          await origSaveAll();
+          render();
+          showToast('✓ クラウドから読み込みました');
+        }
+      }else{
+        showToast('クラウドにデータがありません');
+      }
+    }catch(e){
+      showToast('✗ 読み込み失敗: ' + e.message);
+    }
+  });
+
+  var pushBtn = document.getElementById('syncPushBtn');
+  if(pushBtn) pushBtn.addEventListener('click', async function(){
+    settings.firebaseURL = fbInput.value.trim();
+    saveSettings();
+    if(!settings.firebaseURL){ showToast('URLを入力してください'); return; }
+    try{
+      await firebasePush();
+      showToast('✓ クラウドに書き出しました');
+    }catch(e){
+      showToast('✗ 書き出し失敗: ' + e.message);
+    }
+  });
+}
+
+// ---------- VIEW NAV EVENTS ----------
+document.querySelectorAll('.view-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    switchView(b.getAttribute('data-view'));
+  });
+});
+
+// ---------- INIT ----------
+(async function(){
+  loadSettings();
+  await loadAll();
+  // try GitHub Gist pull on init if configured
+  if(settings.githubToken && settings.githubGistId){
+    try{
+      var data = await githubPull();
+      if(data && Array.isArray(data.entries) && data.entries.length >= state.entries.length){
+        state.entries = data.entries;
+        if(data.tagGroups){
+          state.tagGroups.work = data.tagGroups.work || state.tagGroups.work;
+          state.tagGroups.private = data.tagGroups.private || state.tagGroups.private;
+        }
+        await origSaveAll();
+        updateSyncBadge(true);
+      }
+    }catch(e){ console.warn('initial github pull failed:', e.message); }
+  } else if(settings.firebaseURL){
+    // fallback: try firebase pull
+    try{
+      var fbdata = await firebasePull();
+      if(fbdata && Array.isArray(fbdata.entries) && fbdata.entries.length > state.entries.length){
+        state.entries = fbdata.entries;
+        if(fbdata.tagGroups){
+          state.tagGroups.work = fbdata.tagGroups.work || state.tagGroups.work;
+          state.tagGroups.private = fbdata.tagGroups.private || state.tagGroups.private;
+        }
+        await origSaveAll();
+        updateSyncBadge(true);
+      }
+    }catch(e){ console.warn('initial firebase pull failed:', e.message); }
+  }
+  wireSettings();
+  render();
+})();
+</script>
+</body>
+</html>
