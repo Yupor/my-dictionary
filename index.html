@@ -166,6 +166,40 @@
   }
   .sg-meta .sg-cat{color:var(--ink-soft);margin-right:8px;}
 
+  .sg-predictions{margin-top:8px;}
+  .sg-pred-label{
+    color:var(--accent) !important;
+    border-top:1px dashed var(--line);padding-top:10px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .sg-pred-label::before{
+    content:'✦';font-style:normal;
+  }
+  .sg-pred-loading{
+    font-family:'Newsreader',serif;font-style:italic;
+    color:var(--ink-mute);font-size:13px;padding:8px 0;
+    border-top:1px dashed var(--line);
+  }
+  .sg-pred-item{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:8px 0;border-bottom:1px dotted var(--line);
+  }
+  .sg-pred-item:last-child{border-bottom:none;}
+  .sg-pred-main{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+  .sg-pred-hint{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-size:12.5px;color:var(--ink-soft);line-height:1.4;
+  }
+  .sg-pred-add{
+    background:transparent;border:1px solid var(--accent);color:var(--accent);
+    padding:4px 12px;border-radius:999px;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+    transition:all 0.15s;white-space:nowrap;
+  }
+  .sg-pred-add:hover:not(:disabled){background:var(--accent);color:var(--bg);}
+  .sg-pred-add:disabled{opacity:0.5;cursor:wait;}
+
   /* ========= FILTERS ========= */
   .filters{margin-bottom:36px;}
   .filter-row{
@@ -226,6 +260,9 @@
   .pill:hover{border-color:var(--ink-soft);color:var(--ink);}
   .pill .pill-dot{
     width:6px;height:6px;border-radius:50%;background:var(--ink);
+  }
+  .pill .pill-icon{
+    font-size:13px;line-height:1;display:inline-block;
   }
   .pill.active{background:var(--ink);color:var(--card);border-color:var(--ink);}
   .pill.active .pill-dot{background:var(--card);}
@@ -565,6 +602,10 @@
   .entry-cat .cat-dot{
     width:7px;height:7px;border-radius:50%;background:var(--ink);
   }
+  .entry-cat .cat-icon{
+    font-size:14px;font-weight:normal;line-height:1;
+    width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;
+  }
   .entry-word{
     font-family:'Newsreader','Noto Serif JP',serif;
     font-style:italic;font-weight:600;
@@ -886,6 +927,67 @@
     color:var(--ink-mute);font-style:italic;
   }
 
+  /* Suggestions / News in detail panel */
+  .refresh-btn{
+    margin-left:10px;background:transparent;border:1px solid var(--line);
+    border-radius:50%;width:22px;height:22px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--ink-mute);cursor:pointer;
+    transition:all 0.15s;line-height:1;
+  }
+  .refresh-btn:hover{border-color:var(--ink);color:var(--ink);transform:rotate(180deg);}
+  .lazy-loading,.lazy-empty,.lazy-error{
+    font-family:'Newsreader',serif;font-style:italic;
+    font-size:14px;color:var(--ink-mute);padding:8px 0;
+  }
+  .lazy-error{color:var(--accent);}
+
+  .news-item{
+    padding:12px 0;border-bottom:1px dotted var(--line);
+  }
+  .news-item:last-child{border-bottom:none;}
+  .news-when{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;
+    color:var(--ink-mute);letter-spacing:0.04em;margin-bottom:3px;
+  }
+  .news-title{
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:600;
+    font-size:16px;color:var(--ink);line-height:1.4;margin-bottom:5px;
+  }
+  .news-summary{
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
+    font-size:14px;color:var(--ink-soft);line-height:1.65;
+  }
+
+  .sugg-item{
+    padding:14px 0;border-bottom:1px dotted var(--line);
+    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+  }
+  .sugg-item:last-child{border-bottom:none;}
+  .sugg-main{flex:1;min-width:0;}
+  .sugg-word{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:600;font-size:20px;color:var(--ink);
+    line-height:1.2;margin-bottom:4px;
+  }
+  .sugg-word.ja{font-family:'Noto Serif JP','Newsreader',serif;font-style:normal;}
+  .sugg-hint{
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
+    font-size:13.5px;color:var(--ink-soft);line-height:1.55;
+  }
+  .sugg-action{
+    background:transparent;border:1px solid var(--accent);
+    color:var(--accent);padding:5px 14px;border-radius:999px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.12em;
+    text-transform:uppercase;cursor:pointer;
+    transition:all 0.15s;white-space:nowrap;
+  }
+  .sugg-action:hover:not(:disabled){
+    background:var(--accent);color:var(--bg);
+  }
+  .sugg-action:disabled{opacity:0.5;cursor:wait;}
+
   .panel-foot{
     margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
     display:flex;justify-content:space-between;align-items:center;
@@ -956,7 +1058,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v14</span>
+    <span class="version-badge">v16</span>
   </div>
 </header>
 
@@ -1125,6 +1227,41 @@ function hashStr(s){
 function colorFor(cat){
   if(!cat) return 'var(--ink)';
   return 'var(--' + PALETTE[hashStr(cat) % PALETTE.length] + ')';
+}
+
+// Category icons (editorial unicode symbols)
+var CATEGORY_ICONS = {
+  '哲学':'✦','思想':'✦','倫理':'✦',
+  '技術':'⚙','工学':'⚙','工業':'⚙',
+  '芸術':'✺','アート':'✺',
+  '美学':'✧','デザイン':'✧',
+  '人物':'◉',
+  '概念':'◊','理論':'◊',
+  '文学':'✎','詩':'✎',
+  '歴史':'⌛',
+  '心理':'◐','精神':'◐',
+  '経済':'¥','金融':'¥','ビジネス':'¥',
+  '環境':'❋','エコ':'❋','サステナビリティ':'❋',
+  '食':'⌬','料理':'⌬',
+  '言語':'⌖',
+  '場所':'⌘','地理':'⌘',
+  '政治':'◈',
+  '自然':'❀',
+  '生物':'❉','生命':'❉',
+  '宗教':'✟','信仰':'✟',
+  '科学':'⚛','物理':'⚛','化学':'⚛',
+  '現象':'❖',
+  '感情':'♡',
+  '文化批評':'◑','文化':'◑','社会':'◑',
+  '建築':'⌂',
+  '音楽':'♪',
+  '映画':'▷',
+  '人類学':'◆',
+  '未分類':'·'
+};
+function iconFor(cat){
+  if(!cat) return '·';
+  return CATEGORY_ICONS[cat] || '◦';
 }
 
 // ---------- STORAGE (cross-device via window.storage) ----------
@@ -1502,7 +1639,151 @@ async function fetchEntry(word){
   return parsed;
 }
 
-// ---------- ADD ----------
+// ---------- RELATED SUGGESTIONS & NEWS ----------
+async function fetchSuggestions(word, category){
+  var existingWords = state.entries.map(function(e){ return e.word; }).join(', ');
+  var prompt =
+    '辞書エントリ「' + word + '」（カテゴリ: ' + (category || '未分類') + '）を読んだ人が次に探求すると面白い関連用語を、3つ提案してください。\n\n' +
+    '条件:\n' +
+    '- 既存の用語と被らない（既存: ' + existingWords + '）\n' +
+    '-「' + word + '」自体は除外\n' +
+    '- それぞれ違う角度の関連性（例: 上位概念、対立概念、関連分野、具体例 など）\n' +
+    '- 一言の説明をつける\n\n' +
+    'JSON のみ返してください、前置きやマークダウンは不要:\n' +
+    '{\n' +
+    '  "suggestions": [\n' +
+    '    {"word": "用語名", "hint": "30-50字の説明"},\n' +
+    '    {"word": "用語名", "hint": "30-50字の説明"},\n' +
+    '    {"word": "用語名", "hint": "30-50字の説明"}\n' +
+    '  ]\n' +
+    '}';
+
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers,
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  if(!res.ok) throw new Error('Suggestions API ' + res.status);
+  var data = await res.json();
+  if(data.type === 'error') throw new Error(data.error && data.error.message);
+  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var parsed = extractJSON(fullText);
+  if(!parsed || !Array.isArray(parsed.suggestions)) throw new Error('Bad suggestions response');
+  return parsed.suggestions.slice(0, 3);
+}
+
+async function fetchNews(word, category){
+  var prompt =
+    '「' + word + '」' + (category ? '（' + category + '）' : '') + 'に関連する最近（2024年以降）の話題、議論、出来事、動向を、2〜3個、日本語で簡潔に教えてください。\n\n' +
+    'JSON のみ返してください、前置きやマークダウンは不要:\n' +
+    '{\n' +
+    '  "news": [\n' +
+    '    {"title": "短い見出し（20-40字）", "summary": "1-2文の要約（60-120字）", "when": "いつ頃の話か（例: 2025年, 2024年末, 2026年初頭 など）"},\n' +
+    '    ...\n' +
+    '  ]\n' +
+    '}\n\n' +
+    '関連する最近の動きが特に思い当たらなければ、news を空配列 [] で返してください。';
+
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers,
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 1200,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  if(!res.ok) throw new Error('News API ' + res.status);
+  var data = await res.json();
+  if(data.type === 'error') throw new Error(data.error && data.error.message);
+  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var parsed = extractJSON(fullText);
+  if(!parsed || !Array.isArray(parsed.news)) throw new Error('Bad news response');
+  return parsed.news;
+}
+
+// In-memory cache so we don't refetch every panel open
+var suggestionsCache = {};
+var newsCache = {};
+var predictionsCache = {}; // keyed by prefix
+
+async function fetchPredictions(prefix){
+  if(predictionsCache[prefix]) return predictionsCache[prefix];
+
+  // Build a compact summary of user's existing entries for context
+  var topCategories = {};
+  state.entries.forEach(function(e){
+    var c = e.category || '未分類';
+    topCategories[c] = (topCategories[c] || 0) + 1;
+  });
+  var catList = Object.keys(topCategories)
+    .sort(function(a,b){ return topCategories[b] - topCategories[a]; })
+    .slice(0, 6)
+    .join('、');
+  var sampleWords = state.entries.slice(0, 15).map(function(e){ return e.word; }).join('、');
+
+  var prompt =
+    'ユーザーの個人辞書には以下のような単語が既にあります（一部）: ' + sampleWords + '\n' +
+    'よく使うカテゴリ: ' + catList + '\n\n' +
+    'ユーザーが今、辞書に新しく追加しようとして「' + prefix + '」と入力し始めました。\n' +
+    'このユーザーが調べたがっていそうな単語を、3つ予測してください。\n\n' +
+    '条件:\n' +
+    '- 入力中の「' + prefix + '」で始まる、または含む単語\n' +
+    '- 既存の単語と被らない\n' +
+    '- ユーザーの興味分野（' + catList + '）に近いものを優先\n' +
+    '- 日本語/英語/カタカナいずれも可\n\n' +
+    'JSON のみ返してください、前置きやマークダウンは不要:\n' +
+    '{\n' +
+    '  "predictions": [\n' +
+    '    {"word": "予測される単語", "hint": "30字以内の説明"},\n' +
+    '    {"word": "...", "hint": "..."},\n' +
+    '    {"word": "...", "hint": "..."}\n' +
+    '  ]\n' +
+    '}';
+
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers,
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  if(!res.ok) throw new Error('Pred API ' + res.status);
+  var data = await res.json();
+  if(data.type === 'error') throw new Error(data.error && data.error.message);
+  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var parsed = extractJSON(fullText);
+  if(!parsed || !Array.isArray(parsed.predictions)) throw new Error('Bad predictions');
+  predictionsCache[prefix] = parsed.predictions.slice(0, 3);
+  return predictionsCache[prefix];
+}
 async function addEntry(){
   var input = document.getElementById('addInput');
   var btn = document.getElementById('addBtn');
@@ -1622,7 +1903,7 @@ function renderCatPills(){
   cats.forEach(function(c){
     html +=
       '<button class="pill ' + (state.filter.category === c ? 'active' : '') + '" data-cat="' + escapeHTML(c) + '">' +
-        '<span class="pill-dot" style="background:' + colorFor(c) + ';"></span>' +
+        '<span class="pill-icon" style="color:' + colorFor(c) + ';">' + iconFor(c) + '</span>' +
         escapeHTML(c) + ' <span class="pill-count">' + counts[c] + '</span>' +
       '</button>';
   });
@@ -1726,7 +2007,7 @@ function renderEntries(){
         '<div class="entry-head">' +
           '<span class="entry-num">№ ' + num + '</span>' +
           '<span class="entry-cat">' +
-            '<span class="cat-dot" style="background:' + color + ';"></span>' +
+            '<span class="cat-icon" style="color:' + color + ';">' + iconFor(e.category) + '</span>' +
             escapeHTML(e.category || '未分類') +
           '</span>' +
         '</div>' +
@@ -1885,6 +2166,16 @@ function openDetail(id){
       '<div class="section-label">Notes</div>' +
       '<textarea class="notes-area" id="notesArea" placeholder="自由に書き込めます — 出典、引用、自分の考え、出会った場面…">' + escapeHTML(entry.notes || '') + '</textarea>' +
     '</div>' +
+
+    '<div class="section" id="newsSection">' +
+      '<div class="section-label">Recent context · 最近の話題 <button class="refresh-btn" id="refreshNewsBtn" title="再取得">↻</button></div>' +
+      '<div id="newsContent" class="news-content"><div class="lazy-loading">取得中…</div></div>' +
+    '</div>' +
+
+    '<div class="section" id="suggSection">' +
+      '<div class="section-label">Explore next · 次に探求するなら <button class="refresh-btn" id="refreshSuggBtn" title="再取得">↻</button></div>' +
+      '<div id="suggContent" class="sugg-content"><div class="lazy-loading">考えています…</div></div>' +
+    '</div>' +
     '<div class="panel-foot">' +
       '<div class="foot-meta">' +
         'Added ' + formatDate(entry.createdAt) +
@@ -1992,6 +2283,150 @@ function openDetail(id){
   document.body.style.overflow = 'hidden';
   // update the cards' view counts visible
   renderEntries();
+
+  // Lazy load news and suggestions (don't block panel open)
+  loadNewsForEntry(entry);
+  loadSuggestionsForEntry(entry);
+}
+
+function loadNewsForEntry(entry){
+  var contentEl = document.getElementById('newsContent');
+  if(!contentEl) return;
+  // Use cache if available
+  if(newsCache[entry.id]){
+    renderNews(newsCache[entry.id]);
+    return;
+  }
+  fetchNews(entry.word, entry.category).then(function(news){
+    newsCache[entry.id] = news;
+    if(state.activeId === entry.id) renderNews(news);
+  }).catch(function(err){
+    console.warn('news fetch failed:', err.message);
+    if(state.activeId === entry.id && contentEl){
+      contentEl.innerHTML = '<div class="lazy-error">取得に失敗しました</div>';
+    }
+  });
+
+  // wire refresh button
+  var refreshBtn = document.getElementById('refreshNewsBtn');
+  if(refreshBtn){
+    refreshBtn.onclick = function(){
+      delete newsCache[entry.id];
+      contentEl.innerHTML = '<div class="lazy-loading">取得中…</div>';
+      loadNewsForEntry(entry);
+    };
+  }
+}
+
+function renderNews(news){
+  var contentEl = document.getElementById('newsContent');
+  if(!contentEl) return;
+  if(!news || news.length === 0){
+    contentEl.innerHTML = '<div class="lazy-empty">最近の関連話題は見つかりませんでした</div>';
+    return;
+  }
+  var html = '';
+  news.forEach(function(item){
+    html +=
+      '<div class="news-item">' +
+        '<div class="news-when">' + escapeHTML(item.when || '') + '</div>' +
+        '<div class="news-title">' + escapeHTML(item.title || '') + '</div>' +
+        '<div class="news-summary">' + escapeHTML(item.summary || '') + '</div>' +
+      '</div>';
+  });
+  contentEl.innerHTML = html;
+}
+
+function loadSuggestionsForEntry(entry){
+  var contentEl = document.getElementById('suggContent');
+  if(!contentEl) return;
+  if(suggestionsCache[entry.id]){
+    renderSuggestionsList(suggestionsCache[entry.id]);
+    return;
+  }
+  fetchSuggestions(entry.word, entry.category).then(function(suggs){
+    suggestionsCache[entry.id] = suggs;
+    if(state.activeId === entry.id) renderSuggestionsList(suggs);
+  }).catch(function(err){
+    console.warn('suggestions fetch failed:', err.message);
+    if(state.activeId === entry.id && contentEl){
+      contentEl.innerHTML = '<div class="lazy-error">取得に失敗しました</div>';
+    }
+  });
+
+  var refreshBtn = document.getElementById('refreshSuggBtn');
+  if(refreshBtn){
+    refreshBtn.onclick = function(){
+      delete suggestionsCache[entry.id];
+      contentEl.innerHTML = '<div class="lazy-loading">考えています…</div>';
+      loadSuggestionsForEntry(entry);
+    };
+  }
+}
+
+function renderSuggestionsList(suggs){
+  var contentEl = document.getElementById('suggContent');
+  if(!contentEl) return;
+  if(!suggs || suggs.length === 0){
+    contentEl.innerHTML = '<div class="lazy-empty">提案が見つかりませんでした</div>';
+    return;
+  }
+  var html = '';
+  suggs.forEach(function(s, i){
+    var wClass = isJapanese(s.word) ? 'sugg-word ja' : 'sugg-word';
+    var existing = state.entries.find(function(e){
+      return (e.word || '').toLowerCase() === (s.word || '').toLowerCase();
+    });
+    var actionLabel = existing ? 'open →' : '+ add';
+    html +=
+      '<div class="sugg-item">' +
+        '<div class="sugg-main">' +
+          '<div class="' + wClass + '">' + escapeHTML(s.word) + '</div>' +
+          '<div class="sugg-hint">' + escapeHTML(s.hint || '') + '</div>' +
+        '</div>' +
+        '<button class="sugg-action" data-sugg-word="' + escapeHTML(s.word) + '" data-existing="' + (existing ? existing.id : '') + '">' + actionLabel + '</button>' +
+      '</div>';
+  });
+  contentEl.innerHTML = html;
+  contentEl.querySelectorAll('.sugg-action').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      var existingId = btn.getAttribute('data-existing');
+      if(existingId){
+        openDetail(existingId);
+        return;
+      }
+      var word = btn.getAttribute('data-sugg-word');
+      btn.disabled = true;
+      btn.textContent = 'adding…';
+      try{
+        var data = await fetchEntry(word);
+        var newEntry = {
+          id: uid(),
+          word: data.word || word,
+          language: data.language || (isJapanese(word) ? 'ja' : 'en'),
+          translation: data.translation || '',
+          spelling: data.spelling || '',
+          pronunciation: data.pronunciation || '',
+          category: data.category || '未分類',
+          meaningSimple: data.meaningSimple || '',
+          meaningAdult: data.meaningAdult || '',
+          relatedTerms: Array.isArray(data.relatedTerms) ? data.relatedTerms : [],
+          relatedMovies: Array.isArray(data.relatedMovies) ? data.relatedMovies : [],
+          notes: '', tags: [], viewCount: 0, lastViewedAt: 0,
+          createdAt: Date.now(), updatedAt: Date.now()
+        };
+        state.entries.unshift(newEntry);
+        await saveAll();
+        showToast('追加しました — ' + newEntry.word);
+        btn.textContent = 'added ✓';
+        renderEntries();
+      }catch(err){
+        showToast('追加失敗: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '+ add';
+      }
+    });
+  });
 }
 
 function closeDetail(){
@@ -2083,10 +2518,14 @@ addInputEl.addEventListener('blur', function(){
   }, 200);
 });
 
+var predictionTimer = null;
+var lastPredictionQuery = '';
+
 function renderSuggestions(){
   var q = addInputEl.value.trim().toLowerCase();
   if(!q || q.length < 1){
     suggestionsEl.classList.remove('open');
+    clearTimeout(predictionTimer);
     return;
   }
   var matches = state.entries.filter(function(e){
@@ -2095,22 +2534,24 @@ function renderSuggestions(){
     return w.indexOf(q) !== -1 || t.indexOf(q) !== -1;
   }).slice(0, 5);
 
-  if(matches.length === 0){
-    suggestionsEl.classList.remove('open');
-    return;
+  var html = '';
+  if(matches.length > 0){
+    html += '<div class="sg-label">既にあるエントリ — タップで開く</div>';
+    matches.forEach(function(e){
+      var wClass = isJapanese(e.word) ? 'sg-word ja' : 'sg-word';
+      html += '<div class="sg-item" data-sg-id="' + e.id + '">' +
+        '<span class="' + wClass + '">' + escapeHTML(e.word) + '</span>' +
+        '<span class="sg-meta">' +
+          '<span class="sg-cat">' + escapeHTML(e.category || '') + '</span>' +
+          escapeHTML(e.translation || '') +
+        '</span>' +
+      '</div>';
+    });
   }
 
-  var html = '<div class="sg-label">既にあるエントリ — タップで開く</div>';
-  matches.forEach(function(e){
-    var wClass = isJapanese(e.word) ? 'sg-word ja' : 'sg-word';
-    html += '<div class="sg-item" data-sg-id="' + e.id + '">' +
-      '<span class="' + wClass + '">' + escapeHTML(e.word) + '</span>' +
-      '<span class="sg-meta">' +
-        '<span class="sg-cat">' + escapeHTML(e.category || '') + '</span>' +
-        escapeHTML(e.translation || '') +
-      '</span>' +
-    '</div>';
-  });
+  // Placeholder for predictions (will be filled async)
+  html += '<div class="sg-predictions" id="sgPredictions"></div>';
+
   suggestionsEl.innerHTML = html;
   suggestionsEl.classList.add('open');
   suggestionsEl.querySelectorAll('.sg-item').forEach(function(item){
@@ -2120,6 +2561,62 @@ function renderSuggestions(){
       addInputEl.value = '';
       suggestionsEl.classList.remove('open');
       openDetail(id);
+    });
+  });
+
+  // Trigger AI prediction with debounce (only for non-trivial input)
+  clearTimeout(predictionTimer);
+  if(q.length >= 2 && state.entries.length >= 3){
+    predictionTimer = setTimeout(function(){
+      if(q === lastPredictionQuery){
+        // already loaded
+        renderPredictions(predictionsCache[q] || null);
+        return;
+      }
+      lastPredictionQuery = q;
+      var predEl = document.getElementById('sgPredictions');
+      if(predEl) predEl.innerHTML = '<div class="sg-pred-loading">AI予測を考えています…</div>';
+      fetchPredictions(q).then(function(preds){
+        // only render if still the active query
+        if(addInputEl.value.trim().toLowerCase() === q){
+          renderPredictions(preds);
+        }
+      }).catch(function(err){
+        console.warn('prediction failed:', err.message);
+        var pe = document.getElementById('sgPredictions');
+        if(pe) pe.innerHTML = '';
+      });
+    }, 700);
+  }
+}
+
+function renderPredictions(preds){
+  var predEl = document.getElementById('sgPredictions');
+  if(!predEl || !preds || preds.length === 0){
+    if(predEl) predEl.innerHTML = '';
+    return;
+  }
+  var html = '<div class="sg-label sg-pred-label">AI予測 — 興味に合いそうな単語</div>';
+  preds.forEach(function(p){
+    var wClass = isJapanese(p.word) ? 'sg-word ja' : 'sg-word';
+    html += '<div class="sg-pred-item">' +
+      '<div class="sg-pred-main">' +
+        '<span class="' + wClass + '">' + escapeHTML(p.word) + '</span>' +
+        '<span class="sg-pred-hint">' + escapeHTML(p.hint || '') + '</span>' +
+      '</div>' +
+      '<button class="sg-pred-add" data-pred-word="' + escapeHTML(p.word) + '">+ add</button>' +
+    '</div>';
+  });
+  predEl.innerHTML = html;
+  predEl.querySelectorAll('.sg-pred-add').forEach(function(btn){
+    btn.addEventListener('mousedown', async function(ev){
+      ev.preventDefault();
+      var word = btn.getAttribute('data-pred-word');
+      btn.disabled = true;
+      btn.textContent = 'adding…';
+      addInputEl.value = word;
+      suggestionsEl.classList.remove('open');
+      await addEntry();
     });
   });
 }
