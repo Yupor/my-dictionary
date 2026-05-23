@@ -1175,6 +1175,11 @@ function loadSettings(){
   if(CONFIG.anthropicKey && CONFIG.anthropicKey.indexOf('PASTE_') !== 0){
     settings.anthropicKey = CONFIG.anthropicKey;
   }
+  // If Firebase is configured, clear any legacy GitHub credentials to stop the Gist errors
+  if(settings.firebaseURL){
+    settings.githubToken = '';
+    settings.githubGistId = '';
+  }
   // URL hash overrides (highest priority) — e.g. #fb=URL&anth=KEY
   try{
     var hash = window.location.hash.replace(/^#/, '');
@@ -1651,12 +1656,15 @@ function render(){
 function openDetail(id){
   var entry = state.entries.find(function(e){ return e.id === id; });
   if(!entry) return;
-  state.activeId = id;
 
-  // increment view count
-  entry.viewCount = (entry.viewCount || 0) + 1;
-  entry.lastViewedAt = Date.now();
-  queueSave();
+  // Only increment view count when newly opening (not re-rendering for tag/category edits)
+  var isNewOpen = state.activeId !== id;
+  if(isNewOpen){
+    entry.viewCount = (entry.viewCount || 0) + 1;
+    entry.lastViewedAt = Date.now();
+    queueSave();
+  }
+  state.activeId = id;
 
   var body = document.getElementById('panelBody');
   var color = colorFor(entry.category);
@@ -2309,7 +2317,7 @@ async function githubCreateGist(){
 async function firebasePull(){
   if(!settings.firebaseURL) return null;
   try{
-    var url = settings.firebaseURL.replace(/\/$/, '') + '.json';
+    var url = settings.firebaseURL.replace(/\/$/, '') + '/.json';
     var res = await fetch(url);
     if(!res.ok) throw new Error('Pull ' + res.status);
     var data = await res.json();
@@ -2322,7 +2330,7 @@ async function firebasePull(){
 async function firebasePush(){
   if(!settings.firebaseURL) return;
   try{
-    var url = settings.firebaseURL.replace(/\/$/, '') + '.json';
+    var url = settings.firebaseURL.replace(/\/$/, '') + '/.json';
     var res = await fetch(url, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
@@ -2340,7 +2348,7 @@ async function firebasePush(){
   }
 }
 
-// hook cloud sync into saveAll (Firebase preferred; Gist as optional fallback)
+// hook cloud sync into saveAll (Firebase only; Gist is legacy, not used if Firebase is set)
 var origSaveAll = saveAll;
 saveAll = async function(){
   await origSaveAll();
@@ -2349,12 +2357,13 @@ saveAll = async function(){
     try{
       await firebasePush();
       updateSyncBadge(true);
-      return;
     }catch(e){
       console.warn('firebase push failed:', e.message);
+      updateSyncBadge(false);
     }
+    return; // do NOT fall through to Gist if Firebase is configured
   }
-  // GitHub Gist fallback (legacy)
+  // GitHub Gist fallback (legacy, only if Firebase isn't set)
   if(settings.githubToken && settings.githubGistId){
     try{
       await githubPush();
