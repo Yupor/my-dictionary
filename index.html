@@ -91,6 +91,11 @@
     width:6px;height:6px;border-radius:50%;background:var(--ink-mute);
   }
   .sync-badge.synced .dot{background:#5BAE8C;}
+  .version-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;color:var(--ink-mute);
+    letter-spacing:0.04em;
+  }
 
   /* ========= ADD ========= */
   .add-section{
@@ -461,6 +466,22 @@
   .entries{
     display:grid;grid-template-columns:1fr 1fr;gap:0;
     border-top:1px solid var(--ink);
+  }
+  .entry-delete{
+    position:absolute;top:14px;right:14px;
+    background:transparent;border:none;
+    width:24px;height:24px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:22px;font-weight:300;line-height:1;
+    color:var(--ink-mute);cursor:pointer;
+    opacity:0;transition:opacity 0.15s,color 0.15s,transform 0.15s;
+    z-index:3;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .entry:hover .entry-delete{ opacity:0.5; }
+  .entry-delete:hover{ opacity:1 !important; color:var(--accent); transform:scale(1.15); }
+  @media(hover: none){
+    .entry-delete{ opacity:0.4; }
   }
   .entry{
     padding:26px 22px;border-bottom:1px solid var(--line);
@@ -884,6 +905,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
+    <span class="version-badge">v11</span>
   </div>
 </header>
 
@@ -1370,7 +1392,11 @@ function loadSamples(){
 async function fetchEntry(word){
   var prompt =
     'You are filling out a personal Japanese dictionary entry for the word: "' + word + '"\n\n' +
-    'First, detect whether the input language is Japanese or English.\n\n' +
+    'First, detect whether the input language is Japanese or English. Then research carefully — especially:\n' +
+    '- If it is a BRANDED PRODUCT or TECHNOLOGY (e.g., 燃えんWOOD): identify the developer/manufacturer company.\n' +
+    '- If it is a FRAMEWORK or CONCEPT (e.g., Nature Positive): identify the originating organization and year.\n' +
+    '- If it is a PERSON: identify their main work, field, era.\n' +
+    '- If it is a PHENOMENON or CULTURAL TERM: identify when/where it arose.\n\n' +
     'Return ONLY a single JSON object. No preamble, no markdown code fences, no commentary.\n\n' +
     'Structure:\n' +
     '{\n' +
@@ -1380,12 +1406,12 @@ async function fetchEntry(word){
     '  "spelling": "if input is English, repeat spelling; if Japanese, empty",\n' +
     '  "pronunciation": "if input is English, IPA like /ɪɡˈzæmpl/; if Japanese, empty",\n' +
     '  "category": "best single Japanese category, e.g. 哲学, 芸術, 科学, 人物, 概念, 文学, 歴史, 心理, 経済, 技術, 環境, 食 etc.",\n' +
-    '  "meaningSimple": "Japanese explanation for a middle schooler. 60-120 chars, vivid and concrete.",\n' +
-    '  "meaningAdult": "Japanese adult-level explanation with nuance, context, etymology. 180-280 chars.",\n' +
-    '  "relatedTerms": ["4-6 related concepts, mostly Japanese"],\n' +
-    '  "relatedMovies": ["3-5 films related. Format: 邦題 (英題, 監督, 年)"]\n' +
+    '  "meaningSimple": "Japanese explanation for a middle schooler. 80-150 chars. ALWAYS include the developer/origin if applicable (e.g., 「竹中工務店が開発した燃えにくい木材」, 「ギリシャ哲学から生まれた考え方」).",\n' +
+    '  "meaningAdult": "Japanese adult-level explanation. 250-400 chars. MUST include where relevant: (a) who developed/created/originated it — company, person, country (e.g., 「竹中工務店が独自開発した」「デリダが提唱した」), (b) when — year or era, (c) what makes it distinct from similar things, (d) etymology if the name itself is meaningful, (e) current significance, use, or context. Be concrete with facts, not vague.",\n' +
+    '  "relatedTerms": ["4-6 related concepts, mostly Japanese. Include parent company / framework siblings if relevant."],\n' +
+    '  "relatedMovies": ["3-5 films related. Format: 邦題 (英題, 監督, 年). If the word is a product/technology with no clear film associations, you may instead include documentaries or thematically-adjacent films."]\n' +
     '}\n\n' +
-    'All explanations and category in Japanese. Output the JSON only.';
+    'All explanations and category in Japanese. Be specific with proper nouns. Output the JSON only.';
 
   var headers = {'Content-Type':'application/json'};
   if(settings.anthropicKey){
@@ -1620,6 +1646,7 @@ function renderEntries(){
     }
     html +=
       '<div class="entry" data-id="' + e.id + '" style="animation-delay:' + delay + 's;">' +
+        '<button class="entry-delete" data-delete-id="' + e.id + '" aria-label="Delete">×</button>' +
         '<div class="entry-head">' +
           '<span class="entry-num">№ ' + num + '</span>' +
           '<span class="entry-cat">' +
@@ -1642,6 +1669,21 @@ function renderEntries(){
   el.querySelectorAll('.entry').forEach(function(card){
     card.addEventListener('click', function(){
       openDetail(card.getAttribute('data-id'));
+    });
+  });
+  el.querySelectorAll('.entry-delete').forEach(function(btn){
+    btn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      var id = btn.getAttribute('data-delete-id');
+      var entry = state.entries.find(function(e){ return e.id === id; });
+      if(!entry) return;
+      if(confirm('「' + entry.word + '」を削除しますか？')){
+        state.entries = state.entries.filter(function(e){ return e.id !== id; });
+        saveAll();
+        if(state.activeId === id) closeDetail();
+        render();
+        showToast('削除しました');
+      }
     });
   });
 }
