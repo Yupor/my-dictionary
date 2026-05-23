@@ -1018,12 +1018,12 @@
 'use strict';
 
 // =========================================================
-//  CONFIGURE HERE — 2行だけ書き換えて github.io に上げれば
-//  どの端末からも同じデータを読み書きできます
+//  CONFIGURE HERE
+//  Firebase URL と Anthropic キーの2つだけ。PAT不要。
 // =========================================================
 var CONFIG = {
-  githubToken: 'PASTE_YOUR_GITHUB_PAT_HERE',
-  githubGistId: 'PASTE_YOUR_GIST_ID_HERE'
+  firebaseURL: 'https://my-dictionary-10c0e-default-rtdb.asia-southeast1.firebasedatabase.app',
+  anthropicKey: 'PASTE_YOUR_ANTHROPIC_KEY_HERE'
 };
 // =========================================================
 
@@ -1148,12 +1148,13 @@ function filmarksSearchURL(movieStr){
   return 'https://filmarks.com/search/movies?q=' + encodeURIComponent(title);
 }
 
-// settings (Filmarks user, Firebase URL, GitHub Gist) — stored separately from entries
+// settings (Filmarks user, Firebase URL, GitHub Gist, Anthropic key) — stored separately from entries
 var settings = {
   filmarksUser: '',
   firebaseURL: '',
   githubToken: '',
-  githubGistId: ''
+  githubGistId: '',
+  anthropicKey: ''
 };
 function loadSettings(){
   try{
@@ -1164,16 +1165,17 @@ function loadSettings(){
       settings.firebaseURL = s.firebaseURL || '';
       settings.githubToken = s.githubToken || '';
       settings.githubGistId = s.githubGistId || '';
+      settings.anthropicKey = s.anthropicKey || '';
     }
   }catch(e){}
-  // CONFIG overrides — hardcoded values in the file take priority
-  if(CONFIG.githubToken && CONFIG.githubToken.indexOf('PASTE_') !== 0){
-    settings.githubToken = CONFIG.githubToken;
+  // CONFIG overrides
+  if(CONFIG.firebaseURL && CONFIG.firebaseURL.indexOf('PASTE_') !== 0){
+    settings.firebaseURL = CONFIG.firebaseURL;
   }
-  if(CONFIG.githubGistId && CONFIG.githubGistId.indexOf('PASTE_') !== 0){
-    settings.githubGistId = CONFIG.githubGistId;
+  if(CONFIG.anthropicKey && CONFIG.anthropicKey.indexOf('PASTE_') !== 0){
+    settings.anthropicKey = CONFIG.anthropicKey;
   }
-  // URL hash overrides (highest priority) — e.g. #pat=ghp_xxx&gist=abc123
+  // URL hash overrides (highest priority) — e.g. #fb=URL&anth=KEY
   try{
     var hash = window.location.hash.replace(/^#/, '');
     if(hash){
@@ -1182,11 +1184,13 @@ function loadSettings(){
         var i = p.indexOf('=');
         if(i > -1) params[decodeURIComponent(p.slice(0, i)).toLowerCase()] = decodeURIComponent(p.slice(i+1));
       });
+      if(params.fb) settings.firebaseURL = params.fb;
+      if(params.anth) settings.anthropicKey = params.anth;
+      if(params.filmarks) settings.filmarksUser = params.filmarks;
+      // legacy fields kept for backward compat
       if(params.pat) settings.githubToken = params.pat;
       if(params.gist) settings.githubGistId = params.gist;
-      if(params.filmarks) settings.filmarksUser = params.filmarks;
-      // persist hash credentials to localStorage so subsequent visits without hash still work
-      if(params.pat || params.gist){
+      if(params.fb || params.anth){
         saveSettings();
       }
     }
@@ -1378,9 +1382,17 @@ async function fetchEntry(word){
     '}\n\n' +
     'All explanations and category in Japanese. Output the JSON only.';
 
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    // Direct browser access mode (when hosted outside Claude)
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers: headers,
     body: JSON.stringify({
       model:'claude-sonnet-4-20250514',
       max_tokens: 2500,
@@ -2328,27 +2340,27 @@ async function firebasePush(){
   }
 }
 
-// hook cloud sync into saveAll (GitHub takes precedence over Firebase)
+// hook cloud sync into saveAll (Firebase preferred; Gist as optional fallback)
 var origSaveAll = saveAll;
 saveAll = async function(){
   await origSaveAll();
-  // GitHub Gist sync (preferred)
-  if(settings.githubToken && settings.githubGistId){
-    try{
-      await githubPush();
-      updateSyncBadge(true);
-      return;
-    }catch(e){
-      console.warn('github push failed:', e.message);
-    }
-  }
-  // Firebase fallback
+  // Firebase sync (preferred)
   if(settings.firebaseURL){
     try{
       await firebasePush();
       updateSyncBadge(true);
+      return;
     }catch(e){
       console.warn('firebase push failed:', e.message);
+    }
+  }
+  // GitHub Gist fallback (legacy)
+  if(settings.githubToken && settings.githubGistId){
+    try{
+      await githubPush();
+      updateSyncBadge(true);
+    }catch(e){
+      console.warn('github push failed:', e.message);
     }
   }
 };
@@ -2496,8 +2508,22 @@ document.querySelectorAll('.view-btn').forEach(function(b){
 (async function(){
   loadSettings();
   await loadAll();
-  // try GitHub Gist pull on init if configured
-  if(settings.githubToken && settings.githubGistId){
+  // try Firebase pull on init if configured (preferred)
+  if(settings.firebaseURL){
+    try{
+      var fbdata = await firebasePull();
+      if(fbdata && Array.isArray(fbdata.entries) && fbdata.entries.length >= state.entries.length){
+        state.entries = fbdata.entries;
+        if(fbdata.tagGroups){
+          state.tagGroups.work = fbdata.tagGroups.work || state.tagGroups.work;
+          state.tagGroups.private = fbdata.tagGroups.private || state.tagGroups.private;
+        }
+        await origSaveAll();
+        updateSyncBadge(true);
+      }
+    }catch(e){ console.warn('initial firebase pull failed:', e.message); }
+  } else if(settings.githubToken && settings.githubGistId){
+    // legacy fallback
     try{
       var data = await githubPull();
       if(data && Array.isArray(data.entries) && data.entries.length >= state.entries.length){
@@ -2510,20 +2536,6 @@ document.querySelectorAll('.view-btn').forEach(function(b){
         updateSyncBadge(true);
       }
     }catch(e){ console.warn('initial github pull failed:', e.message); }
-  } else if(settings.firebaseURL){
-    // fallback: try firebase pull
-    try{
-      var fbdata = await firebasePull();
-      if(fbdata && Array.isArray(fbdata.entries) && fbdata.entries.length > state.entries.length){
-        state.entries = fbdata.entries;
-        if(fbdata.tagGroups){
-          state.tagGroups.work = fbdata.tagGroups.work || state.tagGroups.work;
-          state.tagGroups.private = fbdata.tagGroups.private || state.tagGroups.private;
-        }
-        await origSaveAll();
-        updateSyncBadge(true);
-      }
-    }catch(e){ console.warn('initial firebase pull failed:', e.message); }
   }
   wireSettings();
   render();
