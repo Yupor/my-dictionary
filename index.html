@@ -956,7 +956,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v13</span>
+    <span class="version-badge">v14</span>
   </div>
 </header>
 
@@ -2064,8 +2064,8 @@ addInputEl.addEventListener('compositionend', function(){
 });
 
 addInputEl.addEventListener('input', function(){
-  // skip rendering while composing (avoid flickering during IME conversion)
-  if(!imeComposing) renderSuggestions();
+  // Always render suggestions, even during IME composition (predictive while typing)
+  renderSuggestions();
 });
 
 addInputEl.addEventListener('keydown', function(e){
