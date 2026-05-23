@@ -137,6 +137,34 @@
   }
   .add-btn:hover{gap:14px;}
   .add-btn:disabled{opacity:0.4;cursor:wait;}
+  .suggestions{
+    margin-top:12px;
+    display:none;
+  }
+  .suggestions.open{display:block;}
+  .suggestions .sg-label{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:10px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin-bottom:8px;
+  }
+  .sg-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;border-bottom:1px dotted var(--line);
+    cursor:pointer;transition:background 0.12s;
+  }
+  .sg-item:hover{background:var(--card);padding-left:6px;padding-right:6px;}
+  .sg-item:last-child{border-bottom:none;}
+  .sg-word{
+    font-family:'Newsreader','Noto Serif JP',serif;
+    font-style:italic;font-weight:500;font-size:18px;color:var(--ink);
+  }
+  .sg-word.ja{font-family:'Noto Serif JP','Newsreader',serif;font-style:normal;font-weight:600;}
+  .sg-meta{
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-size:11px;color:var(--ink-mute);letter-spacing:0.05em;
+  }
+  .sg-meta .sg-cat{color:var(--ink-soft);margin-right:8px;}
 
   /* ========= FILTERS ========= */
   .filters{margin-bottom:36px;}
@@ -482,6 +510,29 @@
   .entry-delete:hover{ opacity:1 !important; color:var(--accent); transform:scale(1.15); }
   @media(hover: none){
     .entry-delete{ opacity:0.4; }
+  }
+  .tag-separator{
+    grid-column:1 / -1;
+    padding:24px 0 12px;
+    border-bottom:1px solid var(--ink);
+    display:flex;align-items:center;
+  }
+  .ts-label{
+    display:inline-flex;align-items:center;
+    padding:5px 14px;border-radius:3px;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:600;font-size:12px;letter-spacing:0.08em;
+    text-transform:uppercase;
+    border:1px solid;
+  }
+  .ts-label.tag-work{
+    background:var(--work-bg);color:var(--work-fg);border-color:var(--work-border);
+  }
+  .ts-label.tag-private{
+    background:var(--private-bg);color:var(--private-fg);border-color:var(--private-border);
+  }
+  .ts-label.tag-other{
+    background:rgba(138,130,120,0.1);color:#5C544A;border-color:rgba(138,130,120,0.4);
   }
   .entry{
     padding:26px 22px;border-bottom:1px solid var(--line);
@@ -905,7 +956,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v11</span>
+    <span class="version-badge">v13</span>
   </div>
 </header>
 
@@ -926,6 +977,7 @@
     <input type="text" class="add-input" id="addInput" placeholder="単語、名前、概念…なんでも" autocomplete="off" spellcheck="false">
     <button class="add-btn" id="addBtn">Add <span class="arrow">→</span></button>
   </div>
+  <div class="suggestions" id="suggestions"></div>
 </section>
 
 <section class="filters">
@@ -940,6 +992,7 @@
       <option value="az">A → Z</option>
       <option value="za">Z → A</option>
       <option value="mostread">most read</option>
+      <option value="tag">by tag</option>
     </select>
   </div>
   <div class="filter-group-label">Category</div>
@@ -1425,8 +1478,8 @@ async function fetchEntry(word){
     method:'POST',
     headers: headers,
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens: 2500,
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 2000,
       messages:[{role:'user', content: prompt}]
     })
   });
@@ -1538,6 +1591,15 @@ function getFilteredEntries(){
     case 'az': list.sort(function(a,b){ return (a.word||'').localeCompare(b.word||''); }); break;
     case 'za': list.sort(function(a,b){ return (b.word||'').localeCompare(a.word||''); }); break;
     case 'mostread': list.sort(function(a,b){ return (b.viewCount||0) - (a.viewCount||0); }); break;
+    case 'tag':
+      // sort by first tag (no tags last), then by recency within same tag
+      list.sort(function(a,b){
+        var at = (a.tags && a.tags[0]) || '~';  // '~' sorts after letters
+        var bt = (b.tags && b.tags[0]) || '~';
+        if(at === bt) return b.createdAt - a.createdAt;
+        return at.localeCompare(bt);
+      });
+      break;
     default: list.sort(function(a,b){ return b.createdAt - a.createdAt; });
   }
   return list;
@@ -1626,10 +1688,24 @@ function renderEntries(){
     return;
   }
   var html = '';
+  var lastTagShown = null;
+  var showTagSeparators = (state.filter.sort === 'tag');
   list.forEach(function(e, i){
     var num = ('000' + (i + 1)).slice(-3);
     var color = colorFor(e.category);
     var delay = Math.min(i * 0.035, 0.4);
+
+    // Tag group separator
+    if(showTagSeparators){
+      var currentTag = (e.tags && e.tags[0]) || '__none__';
+      if(currentTag !== lastTagShown){
+        var label = currentTag === '__none__' ? 'no tag' : currentTag;
+        var groupClass = currentTag === '__none__' ? 'tag-other' : 'tag-' + getTagGroup(currentTag);
+        html += '<div class="tag-separator"><span class="ts-label ' + groupClass + '">' + escapeHTML(label) + '</span></div>';
+        lastTagShown = currentTag;
+      }
+    }
+
     var pron = '';
     if(e.language === 'en' && e.pronunciation){
       pron = '<div class="entry-pron">' + escapeHTML(e.pronunciation) + '</div>';
@@ -1976,9 +2052,81 @@ function importData(file){
 }
 
 // ---------- EVENTS ----------
-document.getElementById('addBtn').addEventListener('click', addEntry);
-document.getElementById('addInput').addEventListener('keydown', function(e){
-  if(e.key === 'Enter') addEntry();
+// ---------- ADD INPUT: IME-aware Enter + suggestions ----------
+var imeComposing = false;
+var addInputEl = document.getElementById('addInput');
+var suggestionsEl = document.getElementById('suggestions');
+
+addInputEl.addEventListener('compositionstart', function(){ imeComposing = true; });
+addInputEl.addEventListener('compositionend', function(){
+  imeComposing = false;
+  renderSuggestions();
+});
+
+addInputEl.addEventListener('input', function(){
+  // skip rendering while composing (avoid flickering during IME conversion)
+  if(!imeComposing) renderSuggestions();
+});
+
+addInputEl.addEventListener('keydown', function(e){
+  // Only fire on Enter when NOT in IME composition (so confirming Japanese conversion doesn't trigger add)
+  if(e.key === 'Enter' && !imeComposing && !e.isComposing){
+    e.preventDefault();
+    addEntry();
+  }
+});
+
+addInputEl.addEventListener('blur', function(){
+  // hide suggestions after a short delay (so click can register)
+  setTimeout(function(){
+    if(document.activeElement !== addInputEl) suggestionsEl.classList.remove('open');
+  }, 200);
+});
+
+function renderSuggestions(){
+  var q = addInputEl.value.trim().toLowerCase();
+  if(!q || q.length < 1){
+    suggestionsEl.classList.remove('open');
+    return;
+  }
+  var matches = state.entries.filter(function(e){
+    var w = (e.word || '').toLowerCase();
+    var t = (e.translation || '').toLowerCase();
+    return w.indexOf(q) !== -1 || t.indexOf(q) !== -1;
+  }).slice(0, 5);
+
+  if(matches.length === 0){
+    suggestionsEl.classList.remove('open');
+    return;
+  }
+
+  var html = '<div class="sg-label">既にあるエントリ — タップで開く</div>';
+  matches.forEach(function(e){
+    var wClass = isJapanese(e.word) ? 'sg-word ja' : 'sg-word';
+    html += '<div class="sg-item" data-sg-id="' + e.id + '">' +
+      '<span class="' + wClass + '">' + escapeHTML(e.word) + '</span>' +
+      '<span class="sg-meta">' +
+        '<span class="sg-cat">' + escapeHTML(e.category || '') + '</span>' +
+        escapeHTML(e.translation || '') +
+      '</span>' +
+    '</div>';
+  });
+  suggestionsEl.innerHTML = html;
+  suggestionsEl.classList.add('open');
+  suggestionsEl.querySelectorAll('.sg-item').forEach(function(item){
+    item.addEventListener('mousedown', function(ev){
+      ev.preventDefault();
+      var id = item.getAttribute('data-sg-id');
+      addInputEl.value = '';
+      suggestionsEl.classList.remove('open');
+      openDetail(id);
+    });
+  });
+}
+
+document.getElementById('addBtn').addEventListener('click', function(){
+  suggestionsEl.classList.remove('open');
+  addEntry();
 });
 document.getElementById('searchFilter').addEventListener('input', function(e){
   state.filter.search = e.target.value;
