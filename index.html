@@ -1173,6 +1173,24 @@ function loadSettings(){
   if(CONFIG.githubGistId && CONFIG.githubGistId.indexOf('PASTE_') !== 0){
     settings.githubGistId = CONFIG.githubGistId;
   }
+  // URL hash overrides (highest priority) — e.g. #pat=ghp_xxx&gist=abc123
+  try{
+    var hash = window.location.hash.replace(/^#/, '');
+    if(hash){
+      var params = {};
+      hash.split('&').forEach(function(p){
+        var i = p.indexOf('=');
+        if(i > -1) params[decodeURIComponent(p.slice(0, i)).toLowerCase()] = decodeURIComponent(p.slice(i+1));
+      });
+      if(params.pat) settings.githubToken = params.pat;
+      if(params.gist) settings.githubGistId = params.gist;
+      if(params.filmarks) settings.filmarksUser = params.filmarks;
+      // persist hash credentials to localStorage so subsequent visits without hash still work
+      if(params.pat || params.gist){
+        saveSettings();
+      }
+    }
+  }catch(e){ console.warn('URL hash parse failed', e); }
 }
 function saveSettings(){
   try{ localStorage.setItem('my_dictionary_settings', JSON.stringify(settings)); }catch(e){}
