@@ -327,6 +327,107 @@
   }
   .syn-list li:last-child{border-bottom:none;}
 
+  /* Interactive words in examples */
+  .ex-word{
+    cursor:pointer;border-bottom:1px solid transparent;
+    transition:all 0.12s;
+  }
+  .ex-word:hover{
+    border-bottom-color:var(--accent);color:var(--accent);
+  }
+  mark.ex-hl{
+    background:rgba(199,62,43,0.13);color:var(--ink);
+    padding:1px 3px;border-radius:2px;font-weight:600;
+    border-bottom:none;
+  }
+  mark.ex-hl .ex-word{cursor:default;}
+  mark.ex-hl .ex-word:hover{
+    border-bottom-color:transparent;color:inherit;
+  }
+  .hint-sm{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+    font-size:11px;color:var(--ink-mute);letter-spacing:0.02em;text-transform:none;
+    margin-left:8px;
+  }
+
+  /* Word popover */
+  .word-popover{
+    position:fixed;width:240px;
+    background:var(--ink);color:var(--bg);
+    border-radius:6px;padding:12px 14px;z-index:200;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+    animation:wpFade 0.15s ease-out;
+  }
+  @keyframes wpFade{
+    from{opacity:0;transform:translateY(-4px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .wp-word{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:600;
+    font-size:18px;margin-bottom:4px;letter-spacing:-0.01em;
+  }
+  .wp-meaning{
+    font-family:'Noto Sans JP','IBM Plex Sans',sans-serif;
+    font-weight:400;font-size:13px;line-height:1.5;margin-bottom:10px;
+    color:#E5E1D5;min-height:18px;
+  }
+  .wp-loading{opacity:0.5;}
+  .wp-error{color:#FF9B85;}
+  .wp-actions{display:flex;justify-content:flex-end;}
+  .wp-btn{
+    background:var(--accent);color:white;border:none;
+    padding:5px 12px;border-radius:3px;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:500;font-size:11px;letter-spacing:0.05em;
+    transition:all 0.15s;
+  }
+  .wp-btn:hover:not(:disabled){background:#A82E1F;}
+  .wp-btn:disabled{opacity:0.6;cursor:wait;}
+  .wp-open{background:transparent;border:1px solid #888;color:#E5E1D5;}
+  .wp-open:hover{background:#444;}
+
+  /* English add section emphasis */
+  .english-add-section{margin-top:8px;}
+  .english-add-section .add-input{font-size:24px;}
+
+  /* English top row: progress + CTA side by side */
+  .english-top-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+    margin-bottom:36px;align-items:stretch;
+  }
+  .english-top-row .english-progress{
+    margin-bottom:0;grid-template-rows:1fr;
+  }
+  .english-top-row .english-review-cta{margin-bottom:0;}
+  .english-top-row .review-cta{
+    height:100%;margin:0;border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--line);border-left:3px solid var(--accent);
+    align-items:flex-start;flex-direction:column;gap:8px;
+  }
+  .english-top-row .review-cta .rc-btn{
+    margin-left:0;margin-top:auto;align-self:flex-start;
+  }
+  .english-top-row .review-cta .rc-count{font-size:48px;margin:4px 0;}
+
+  /* Filters folded by default */
+  .english-filters-toggle{
+    margin-bottom:24px;border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);padding:0;
+  }
+  .english-filters-toggle summary{
+    cursor:pointer;list-style:none;padding:14px 0;
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:11px;
+    letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-mute);
+    display:flex;align-items:center;gap:10px;
+  }
+  .english-filters-toggle summary::-webkit-details-marker{display:none;}
+  .english-filters-toggle summary::after{
+    content:'▾';margin-left:auto;font-size:12px;transition:transform 0.2s;
+  }
+  .english-filters-toggle[open] summary::after{transform:rotate(180deg);}
+  .english-filters-toggle summary:hover{color:var(--ink);}
+  .english-filters-inner{padding:8px 0 16px;margin-bottom:0 !important;}
+
   /* ========= REVIEW SESSION ========= */
   .review-container{
     padding:20px 0;text-align:center;display:flex;flex-direction:column;align-items:center;
@@ -438,6 +539,7 @@
     .mode-toggle{flex-direction:column;}
     .mode-btn{border-right:none;border-bottom:1px solid var(--line);}
     .mode-btn:last-child{border-bottom:none;}
+    .english-top-row{grid-template-columns:1fr;gap:18px;}
   }
 
   /* ========= ADD ========= */
@@ -542,6 +644,11 @@
   }
   .sg-pred-add:hover:not(:disabled){background:var(--accent);color:var(--bg);}
   .sg-pred-add:disabled{opacity:0.5;cursor:wait;}
+  .sg-pred-fix{
+    color:var(--accent);font-style:italic;
+    font-family:'Newsreader',serif;font-weight:600;
+    margin-right:2px;
+  }
 
   /* ========= FILTERS ========= */
   .filters{margin-bottom:36px;}
@@ -1055,6 +1162,25 @@
   .l-msg .dot:nth-child(2){animation-delay:-0.16s;}
   @keyframes pulse{0%,80%,100%{opacity:0.3;}40%{opacity:1;}}
 
+  .l-stream{
+    margin-top:32px;max-width:480px;margin-left:auto;margin-right:auto;
+  }
+  .l-bar{
+    height:2px;background:var(--line);position:relative;overflow:hidden;
+    border-radius:2px;margin-bottom:18px;
+  }
+  .l-bar-fill{
+    height:100%;background:var(--accent);
+    transition:width 0.15s ease-out;
+    box-shadow:0 0 8px var(--accent);
+  }
+  .l-preview{
+    font-family:'Newsreader','Noto Serif JP',serif;font-style:italic;
+    font-size:15px;color:var(--ink-soft);line-height:1.6;
+    animation:fadeIn 0.3s;min-height:24px;
+  }
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
   /* ========= DETAIL PANEL ========= */
   .panel-overlay{
     position:fixed;inset:0;background:rgba(26,22,18,0.35);
@@ -1401,7 +1527,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v17</span>
+    <span class="version-badge">v20</span>
   </div>
   <nav class="mode-toggle">
     <button class="mode-btn active" data-mode="lexicon">
@@ -1484,37 +1610,42 @@
 
 <div id="englishMode" class="mode-container" style="display:none;">
 
-<section class="english-progress" id="englishProgress"></section>
-
-<section class="english-review-cta" id="englishReviewCTA"></section>
-
-<section class="add-section">
+<section class="add-section english-add-section">
   <div class="section-eyebrow">New English word or phrase</div>
   <div class="add-row">
     <input type="text" class="add-input" id="addEnglishInput" placeholder="e.g. end up / precrastinator / pivotal" autocomplete="off" spellcheck="false">
     <button class="add-btn" id="addEnglishBtn">Add <span class="arrow">→</span></button>
   </div>
+  <div class="suggestions" id="englishSuggestions"></div>
 </section>
 
-<section class="filters">
-  <div class="filter-row">
-    <div class="search-wrap">
-      <input type="text" class="search-filter" id="englishSearchFilter" placeholder="単語を検索...">
+<div class="english-top-row">
+  <section class="english-progress" id="englishProgress"></section>
+  <section class="english-review-cta" id="englishReviewCTA"></section>
+</div>
+
+<details class="english-filters-toggle" open>
+  <summary>Filters & search</summary>
+  <section class="filters english-filters-inner">
+    <div class="filter-row">
+      <div class="search-wrap">
+        <input type="text" class="search-filter" id="englishSearchFilter" placeholder="単語を検索...">
+      </div>
+      <span class="sort-label">Sort</span>
+      <select class="sort-select" id="englishSortSelect">
+        <option value="newest">newest</option>
+        <option value="oldest">oldest</option>
+        <option value="az">A → Z</option>
+        <option value="mastery">by mastery</option>
+        <option value="due">review due</option>
+      </select>
     </div>
-    <span class="sort-label">Sort</span>
-    <select class="sort-select" id="englishSortSelect">
-      <option value="newest">newest</option>
-      <option value="oldest">oldest</option>
-      <option value="az">A → Z</option>
-      <option value="mastery">by mastery</option>
-      <option value="due">review due</option>
-    </select>
-  </div>
-  <div class="filter-group-label">Mastery</div>
-  <div class="cat-pills" id="englishMasteryPills"></div>
-  <div class="filter-group-label">Part of speech</div>
-  <div class="cat-pills" id="englishPosPills"></div>
-</section>
+    <div class="filter-group-label">Mastery</div>
+    <div class="cat-pills" id="englishMasteryPills"></div>
+    <div class="filter-group-label">Part of speech</div>
+    <div class="cat-pills" id="englishPosPills"></div>
+  </section>
+</details>
 
 <div class="entries-eyebrow">
   <span>Vocabulary</span>
@@ -1750,11 +1881,11 @@ function formatDate(ts){
   var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear();
 }
-function showToast(msg){
+function showToast(msg, duration){
   var t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+  setTimeout(function(){ t.classList.remove('show'); }, duration || 2400);
 }
 function isJapanese(s){ return /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s || ''); }
 
@@ -1983,61 +2114,30 @@ function loadSamples(){
 }
 
 // ---------- API ----------
-async function fetchEntry(word){
+async function fetchEntry(word, onProgress){
   var prompt =
-    'You are filling out a personal Japanese dictionary entry for the word: "' + word + '"\n\n' +
-    'First, detect whether the input language is Japanese or English. Then research carefully — especially:\n' +
-    '- If it is a BRANDED PRODUCT or TECHNOLOGY (e.g., 燃えんWOOD): identify the developer/manufacturer company.\n' +
-    '- If it is a FRAMEWORK or CONCEPT (e.g., Nature Positive): identify the originating organization and year.\n' +
-    '- If it is a PERSON: identify their main work, field, era.\n' +
-    '- If it is a PHENOMENON or CULTURAL TERM: identify when/where it arose.\n\n' +
-    'Return ONLY a single JSON object. No preamble, no markdown code fences, no commentary.\n\n' +
-    'Structure:\n' +
+    '日本語の個人辞書エントリ: "' + word + '"\n\n' +
+    '言語判定 (ja/en) → 慎重にリサーチ:\n' +
+    '- ブランド/技術(例: 燃えんWOOD): 開発元企業を明記\n' +
+    '- 概念/フレームワーク: 提唱者と年\n' +
+    '- 人物: 主な業績、分野、時代\n' +
+    '- 現象/文化用語: 起源\n\n' +
+    'JSONのみ返す（前置き・マークダウン不要）:\n' +
     '{\n' +
-    '  "language": "ja" or "en",\n' +
-    '  "word": "the word as entered",\n' +
-    '  "translation": "translation in the OTHER language",\n' +
-    '  "spelling": "if input is English, repeat spelling; if Japanese, empty",\n' +
-    '  "pronunciation": "if input is English, IPA like /ɪɡˈzæmpl/; if Japanese, empty",\n' +
-    '  "category": "best single Japanese category, e.g. 哲学, 芸術, 科学, 人物, 概念, 文学, 歴史, 心理, 経済, 技術, 環境, 食 etc.",\n' +
-    '  "meaningSimple": "Japanese explanation for a middle schooler. 80-150 chars. ALWAYS include the developer/origin if applicable (e.g., 「竹中工務店が開発した燃えにくい木材」, 「ギリシャ哲学から生まれた考え方」).",\n' +
-    '  "meaningAdult": "Japanese adult-level explanation. 250-400 chars. MUST include where relevant: (a) who developed/created/originated it — company, person, country (e.g., 「竹中工務店が独自開発した」「デリダが提唱した」), (b) when — year or era, (c) what makes it distinct from similar things, (d) etymology if the name itself is meaningful, (e) current significance, use, or context. Be concrete with facts, not vague.",\n' +
-    '  "relatedTerms": ["4-6 related concepts, mostly Japanese. Include parent company / framework siblings if relevant."],\n' +
-    '  "relatedMovies": ["3-5 films related. Format: 邦題 (英題, 監督, 年). If the word is a product/technology with no clear film associations, you may instead include documentaries or thematically-adjacent films."]\n' +
-    '}\n\n' +
-    'All explanations and category in Japanese. Be specific with proper nouns. Output the JSON only.';
+    '"language":"ja|en",\n' +
+    '"word":"入力通り",\n' +
+    '"translation":"反対言語の訳",\n' +
+    '"spelling":"英語入力時のみ綴り、和文時は空",\n' +
+    '"pronunciation":"英語入力時のみ IPA、和文時は空",\n' +
+    '"category":"単一カテゴリ(哲学/技術/芸術/概念/環境/人物等)",\n' +
+    '"meaningSimple":"中学生向け説明 80-150字。開発元・起源も含める",\n' +
+    '"meaningAdult":"大人向け説明 250-400字。(a)開発者/提唱者(b)年(c)他との違い(d)語源(e)現代の意義。具体的に。",\n' +
+    '"relatedTerms":["4-6個、主に日本語"],\n' +
+    '"relatedMovies":["3-5本、邦題(英題, 監督, 年)"]\n' +
+    '}\n' +
+    '日本語で。固有名詞を具体的に。JSONのみ。';
 
-  var headers = {'Content-Type':'application/json'};
-  if(settings.anthropicKey){
-    // Direct browser access mode (when hosted outside Claude)
-    headers['x-api-key'] = settings.anthropicKey;
-    headers['anthropic-version'] = '2023-06-01';
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-  }
-
-  var res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers: headers,
-    body: JSON.stringify({
-      model:'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
-      messages:[{role:'user', content: prompt}]
-    })
-  });
-  console.log('API status:', res.status);
-  if(!res.ok){
-    var errText = '';
-    try{ errText = await res.text(); }catch(e){}
-    throw new Error('API ' + res.status + (errText ? ': ' + errText.slice(0,100) : ''));
-  }
-  var data = await res.json();
-  console.log('API data:', data);
-  if(data && data.type === 'error') throw new Error('API: ' + (data.error && data.error.message || 'unknown'));
-  if(!data || !Array.isArray(data.content)) throw new Error('No content blocks');
-  var textBlocks = data.content.filter(function(c){ return c.type === 'text'; });
-  if(textBlocks.length === 0) throw new Error('No text blocks');
-  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
-  console.log('API text:', fullText);
+  var fullText = await streamAnthropic(prompt, {max_tokens: 1800}, onProgress);
   var parsed = extractJSON(fullText);
   if(!parsed) throw new Error('JSON抽出失敗: ' + fullText.slice(0,80));
   return parsed;
@@ -2203,7 +2303,9 @@ async function addEntry(){
   renderLoading(raw);
 
   try{
-    var data = await fetchEntry(raw);
+    var data = await fetchEntry(raw, function(streamedText){
+      updateLoadingProgress(streamedText);
+    });
     var entry = {
       id: uid(),
       word: data.word || raw,
@@ -2247,7 +2349,31 @@ function renderLoading(word){
         '<span>Searching</span>' +
         '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>' +
       '</div>' +
+      '<div class="l-stream" id="lStream"></div>' +
     '</div>';
+}
+function updateLoadingProgress(streamedText){
+  var el = document.getElementById('lStream');
+  if(!el) el = document.getElementById('lEngStream');
+  if(!el) return;
+  // Extract value from JSON-ish stream to display nicely
+  // Simply show character count and the most recent fragment
+  var charCount = streamedText.length;
+  // Try to pull current "meaningSimple" or "word" if visible
+  var preview = '';
+  var meaningMatch = streamedText.match(/"meaning(?:Simple|Ja)"\s*:\s*"([^"]*)/);
+  if(meaningMatch) preview = meaningMatch[1];
+  else {
+    var wordMatch = streamedText.match(/"translation"\s*:\s*"([^"]*)/);
+    if(wordMatch) preview = wordMatch[1];
+    else {
+      var catMatch = streamedText.match(/"category"\s*:\s*"([^"]*)/);
+      if(catMatch) preview = '...' + catMatch[1];
+    }
+  }
+  el.innerHTML =
+    '<div class="l-bar"><div class="l-bar-fill" style="width:' + Math.min(100, charCount / 18) + '%;"></div></div>' +
+    (preview ? '<div class="l-preview">' + escapeHTML(preview.slice(0, 80)) + (preview.length > 80 ? '…' : '') + '</div>' : '');
 }
 
 // ---------- FILTER ----------
@@ -3605,6 +3731,287 @@ document.querySelectorAll('.view-btn').forEach(function(b){
   });
 });
 
+// Highlight target word in example sentence (also handles -s, -ed, -ing, -er, -est forms)
+function highlightInExample(sentence, target){
+  if(!sentence || !target) return escapeHTML(sentence || '');
+  // Build word-form regex (root + common inflections)
+  var root = target.trim();
+  // For phrasal verbs / multi-word: handle each part
+  var parts = root.split(/\s+/);
+  if(parts.length > 1){
+    // For multi-word: try to highlight the whole phrase first, with verb conjugations
+    var firstPart = parts[0];
+    var rest = parts.slice(1).join(' ');
+    var firstRegex = '\\b(' + escapeRegex(firstPart) + '(?:s|ed|ing|d|ies|ied)?)\\b';
+    var fullRegex = firstRegex + '\\s+' + escapeRegex(rest);
+    var re1 = new RegExp(fullRegex, 'gi');
+    if(re1.test(sentence)){
+      return interactiveText(sentence.replace(re1, '\x01$&\x02'));
+    }
+  }
+  var single = '\\b(' + escapeRegex(root) + '(?:s|es|ed|d|ing|er|est|ies|ied)?)\\b';
+  var re2 = new RegExp(single, 'gi');
+  if(re2.test(sentence)){
+    return interactiveText(sentence.replace(re2, '\x01$&\x02'));
+  }
+  // No match found — just make all words interactive
+  return interactiveText(sentence);
+}
+function escapeRegex(s){
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Turn a sentence into interactive HTML where:
+// - text between \x01...\x02 markers becomes a highlight span
+// - every other word becomes a hover-tappable .ex-word for + add
+function interactiveText(text){
+  var result = '';
+  var i = 0;
+  while(i < text.length){
+    if(text[i] === '\x01'){
+      var end = text.indexOf('\x02', i);
+      if(end === -1) end = text.length;
+      var inner = text.slice(i+1, end);
+      result += '<mark class="ex-hl">' + tokenizeWords(inner, true) + '</mark>';
+      i = end + 1;
+    } else {
+      // accumulate until next marker
+      var nextMark = text.indexOf('\x01', i);
+      var chunk = (nextMark === -1) ? text.slice(i) : text.slice(i, nextMark);
+      result += tokenizeWords(chunk, false);
+      i = (nextMark === -1) ? text.length : nextMark;
+    }
+  }
+  return result;
+}
+// Tokenize each word as a hover-add span; isHighlighted means it's the target word itself (no add button)
+function tokenizeWords(text, isHighlighted){
+  // Split keeping separators
+  return text.replace(/([A-Za-z][A-Za-z'-]*)/g, function(m, w){
+    if(isHighlighted){
+      return '<span class="ex-word ex-word-target" data-word="' + escapeHTML(w) + '">' + escapeHTML(w) + '</span>';
+    }
+    return '<span class="ex-word" data-word="' + escapeHTML(w) + '">' + escapeHTML(w) + '</span>';
+  });
+}
+
+// Word tooltip cache
+var wordTooltipCache = {};
+async function fetchQuickMeaning(word){
+  if(wordTooltipCache[word.toLowerCase()]) return wordTooltipCache[word.toLowerCase()];
+  var prompt =
+    'Give a very brief Japanese definition of the English word "' + word + '" in 1 line (15-40 chars).\n' +
+    'Return ONLY JSON: {"word":"' + word + '", "ja":"日本語の意味（短く）"}\n' +
+    'No preamble, no markdown.';
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers,
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 150,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  if(!res.ok) throw new Error('API ' + res.status);
+  var data = await res.json();
+  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var parsed = extractJSON(fullText);
+  if(!parsed) throw new Error('parse');
+  wordTooltipCache[word.toLowerCase()] = parsed;
+  return parsed;
+}
+
+// ---------- WORD POPOVER (hover/tap in examples) ----------
+var activePopover = null;
+function closeActivePopover(){
+  if(activePopover && activePopover.parentNode){
+    activePopover.parentNode.removeChild(activePopover);
+  }
+  activePopover = null;
+}
+
+function showWordPopover(targetEl, word, parentWord){
+  closeActivePopover();
+  if(!word || word.length < 2) return;
+  // Skip if it's the same as parent entry word
+  if(word.toLowerCase() === (parentWord || '').toLowerCase()) return;
+
+  // Check if already in english entries
+  var existing = state.englishEntries.find(function(e){
+    return (e.word || '').toLowerCase() === word.toLowerCase();
+  });
+
+  var pop = document.createElement('div');
+  pop.className = 'word-popover';
+  pop.innerHTML =
+    '<div class="wp-word">' + escapeHTML(word) + '</div>' +
+    '<div class="wp-meaning" id="wpMeaning"><span class="wp-loading">…</span></div>' +
+    '<div class="wp-actions">' +
+      (existing
+        ? '<button class="wp-btn wp-open" data-open="' + existing.id + '">open →</button>'
+        : '<button class="wp-btn wp-add" data-add="' + escapeHTML(word) + '">+ add to English deck</button>'
+      ) +
+    '</div>';
+  document.body.appendChild(pop);
+  activePopover = pop;
+
+  // Position near the target word
+  var rect = targetEl.getBoundingClientRect();
+  var popWidth = 240;
+  var left = rect.left + (rect.width / 2) - (popWidth / 2);
+  left = Math.max(12, Math.min(window.innerWidth - popWidth - 12, left));
+  var top = rect.bottom + 8;
+  // If too low, show above
+  if(top + 120 > window.innerHeight){
+    top = rect.top - 130;
+  }
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+
+  // Fetch quick meaning
+  fetchQuickMeaning(word).then(function(data){
+    var meaningEl = pop.querySelector('#wpMeaning');
+    if(meaningEl && pop === activePopover){
+      meaningEl.innerHTML = escapeHTML(data.ja || '');
+    }
+  }).catch(function(){
+    var meaningEl = pop.querySelector('#wpMeaning');
+    if(meaningEl) meaningEl.innerHTML = '<span class="wp-error">取得失敗</span>';
+  });
+
+  // Wire actions
+  var addBtn = pop.querySelector('.wp-add');
+  if(addBtn) addBtn.addEventListener('click', async function(){
+    var w = addBtn.getAttribute('data-add');
+    addBtn.disabled = true;
+    addBtn.textContent = 'adding…';
+    try{
+      var data = await fetchEnglishEntry(w);
+      var newEntry = {
+        id: uid(),
+        word: data.word || w,
+        partOfSpeech: data.partOfSpeech || '',
+        partOfSpeechJa: data.partOfSpeechJa || '',
+        pronunciation: data.pronunciation || '',
+        katakana: data.katakana || '',
+        meaningJa: data.meaningJa || '',
+        nuance: data.nuance || '',
+        examples: Array.isArray(data.examples) ? data.examples : [],
+        collocations: Array.isArray(data.collocations) ? data.collocations : [],
+        synonyms: Array.isArray(data.synonyms) ? data.synonyms : [],
+        relatedWords: Array.isArray(data.relatedWords) ? data.relatedWords : [],
+        mastery: 'new',
+        nextReviewAt: Date.now(),
+        reviewCount: 0,
+        lastReviewedAt: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      state.englishEntries.unshift(newEntry);
+      await saveAll();
+      closeActivePopover();
+      showToast('Added — ' + newEntry.word);
+      renderEnglish();
+    }catch(err){
+      addBtn.disabled = false;
+      addBtn.textContent = '+ add to English deck';
+      showToast('追加失敗: ' + err.message);
+    }
+  });
+  var openBtn = pop.querySelector('.wp-open');
+  if(openBtn) openBtn.addEventListener('click', function(){
+    var id = openBtn.getAttribute('data-open');
+    closeActivePopover();
+    openEnglishDetail(id);
+  });
+
+  // Close on outside click
+  setTimeout(function(){
+    document.addEventListener('click', outsidePopoverClick);
+    pop.addEventListener('mouseleave', function(){
+      setTimeout(function(){
+        if(activePopover === pop && !pop.matches(':hover')){
+          closeActivePopover();
+        }
+      }, 300);
+    });
+  }, 50);
+}
+function outsidePopoverClick(e){
+  if(!activePopover) return;
+  if(activePopover.contains(e.target)) return;
+  if(e.target.classList && e.target.classList.contains('ex-word')) return;
+  closeActivePopover();
+  document.removeEventListener('click', outsidePopoverClick);
+}
+
+// ---------- WORD POPOVER end ----------
+
+// ============================================================
+// STREAMING API HELPER — shows progress as text streams in
+// ============================================================
+async function streamAnthropic(prompt, options, onChunk){
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  var body = {
+    model: (options && options.model) || 'claude-haiku-4-5-20251001',
+    max_tokens: (options && options.max_tokens) || 2000,
+    messages: [{role:'user', content: prompt}],
+    stream: true
+  };
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers, body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    var errText = await res.text();
+    throw new Error('API ' + res.status + ': ' + errText);
+  }
+  var reader = res.body.getReader();
+  var decoder = new TextDecoder();
+  var buffer = '';
+  var fullText = '';
+
+  while(true){
+    var chunk = await reader.read();
+    if(chunk.done) break;
+    buffer += decoder.decode(chunk.value, {stream:true});
+    var events = buffer.split('\n\n');
+    buffer = events.pop();
+    for(var i = 0; i < events.length; i++){
+      var lines = events[i].split('\n');
+      for(var j = 0; j < lines.length; j++){
+        var line = lines[j];
+        if(line.indexOf('data:') === 0){
+          var jsonStr = line.substring(5).trim();
+          if(!jsonStr || jsonStr === '[DONE]') continue;
+          try{
+            var data = JSON.parse(jsonStr);
+            if(data.type === 'content_block_delta' && data.delta && data.delta.text){
+              fullText += data.delta.text;
+              if(onChunk) onChunk(fullText);
+            } else if(data.type === 'error'){
+              throw new Error(data.error && data.error.message || 'stream error');
+            }
+          }catch(e){
+            // skip parse errors of individual events
+          }
+        }
+      }
+    }
+  }
+  return fullText;
+}
+
 // ============================================================
 // ENGLISH STUDY MODE
 // ============================================================
@@ -3621,56 +4028,34 @@ var SRS_INTERVALS = {
   remembered:{ learning: 7, mastered: 21 }  // remembered → 7 days (learning) or 21 days (mastered)
 };
 
-async function fetchEnglishEntry(word){
-  var contextList = [
-    'sustainability consulting',
-    'creative direction and editorial',
-    'art theory and aesthetics',
-    'TED-style public speaking',
-    'business strategy'
-  ];
+async function fetchEnglishEntry(word, onProgress){
   var prompt =
-    'You are creating a study card for an English word/phrase the user wants to use in international work contexts: sustainability consulting, creative/editorial work, art theory, TED-style talks.\n\n' +
-    'Word: "' + word + '"\n\n' +
-    'Return ONLY a single JSON object. No preamble, no markdown.\n\n' +
+    'English study card. User contexts: sustainability consulting, creative/editorial, art theory, TED talks.\n\n' +
+    'Input: "' + word + '"\n\n' +
+    'STEP 1 — Spell check: Is this a real English word as spelled? If typo, find intended word. (precrastinator IS real; asthetic→aesthetic; definately→definitely)\n' +
+    'STEP 2 — Generate card for the CORRECT word.\n\n' +
+    'JSON only (no preamble/markdown):\n' +
     '{\n' +
-    '  "word": "the word/phrase as entered, cleaned up",\n' +
-    '  "partOfSpeech": "品詞 in English, e.g., verb, phrasal verb, noun, adjective, idiom",\n' +
-    '  "partOfSpeechJa": "品詞の日本語, 例: 動詞, 句動詞, 名詞, 形容詞, イディオム",\n' +
-    '  "pronunciation": "IPA like /ɪɡˈzæmpl/",\n' +
-    '  "katakana": "カタカナ読み（参考程度、ネイティブ音への近似）",\n' +
-    '  "meaningJa": "日本語の意味。複数の意味がある場合は ① ② で区別。80-200字。",\n' +
-    '  "nuance": "ニュアンス・使い分けメモ。フォーマル度、似た語との違い、ビジネス/カジュアルの別、皮肉や冗談を含むかなど。100-200字。",\n' +
-    '  "examples": [\n' +
-    '    {"en": "サステナビリティ・コンサル文脈の自然な例文 (15-25 words, professional)", "ja": "日本語訳"},\n' +
-    '    {"en": "クリエイティブ・編集または芸術文脈の例文", "ja": "日本語訳"},\n' +
-    '    {"en": "TED的なプレゼン口調の例文", "ja": "日本語訳"}\n' +
-    '  ],\n' +
-    '  "collocations": ["よく一緒に使われる組み合わせを4-6個 (例: end up with, end up doing, end up in)"],\n' +
-    '  "synonyms": ["類義語2-4個、ニュアンスの違いを括弧で短く (e.g., wind up (more casual))"],\n' +
-    '  "relatedWords": ["関連語・派生語 2-4個"]\n' +
-    '}\n\n' +
-    'Examples MUST be in the target professional contexts. Pronunciation must be accurate IPA. Output JSON only.';
+    '"spellCorrection":{"wasCorrected":true|false,"originalInput":"original","correctedTo":"correct or same","reason":"短い日本語の理由(訂正時のみ)"},\n' +
+    '"word":"FINAL correct form",\n' +
+    '"partOfSpeech":"verb/phrasal verb/noun/adjective/idiom etc",\n' +
+    '"partOfSpeechJa":"品詞の日本語",\n' +
+    '"pronunciation":"IPA",\n' +
+    '"katakana":"カタカナ読み",\n' +
+    '"meaningJa":"日本語意味 80-200字。複数意味は① ②で",\n' +
+    '"nuance":"ニュアンス/使い分け 100-200字",\n' +
+    '"examples":[\n' +
+    '  {"en":"sustainability/consulting context 15-25 words","ja":"訳"},\n' +
+    '  {"en":"creative/editorial/art context","ja":"訳"},\n' +
+    '  {"en":"TED-style presentation","ja":"訳"}\n' +
+    '],\n' +
+    '"collocations":["4-6 collocations"],\n' +
+    '"synonyms":["2-4個、(違いを括弧で)"],\n' +
+    '"relatedWords":["2-4個"]\n' +
+    '}\n' +
+    'Pro contexts only. Accurate IPA. JSON only.';
 
-  var headers = {'Content-Type':'application/json'};
-  if(settings.anthropicKey){
-    headers['x-api-key'] = settings.anthropicKey;
-    headers['anthropic-version'] = '2023-06-01';
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-  }
-  var res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST', headers: headers,
-    body: JSON.stringify({
-      model:'claude-haiku-4-5-20251001',
-      max_tokens: 2500,
-      messages:[{role:'user', content: prompt}]
-    })
-  });
-  if(!res.ok) throw new Error('API ' + res.status);
-  var data = await res.json();
-  if(data.type === 'error') throw new Error(data.error && data.error.message);
-  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
-  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var fullText = await streamAnthropic(prompt, {max_tokens: 2000}, onProgress);
   var parsed = extractJSON(fullText);
   if(!parsed) throw new Error('JSON parse failed');
   return parsed;
@@ -3691,10 +4076,44 @@ async function addEnglishEntry(){
   renderEnglishLoading(raw);
 
   try{
-    var data = await fetchEnglishEntry(raw);
+    var data = await fetchEnglishEntry(raw, function(streamedText){
+      updateLoadingProgress(streamedText);
+    });
+
+    // Check if spelling was corrected
+    var sc = data.spellCorrection;
+    var finalWord = data.word || raw;
+    if(sc && sc.wasCorrected && sc.correctedTo && sc.correctedTo.toLowerCase() !== raw.toLowerCase()){
+      // Check if corrected version is already registered
+      var existing = state.englishEntries.find(function(e){
+        return (e.word || '').toLowerCase() === sc.correctedTo.toLowerCase();
+      });
+      if(existing){
+        var confirmMsg = '「' + raw + '」は「' + sc.correctedTo + '」に訂正されました（' + (sc.reason || '訂正') + '）。\n' +
+          '既に登録済みなので、そちらを開きます。';
+        showToast(confirmMsg, 4000);
+        input.value = '';
+        openEnglishDetail(existing.id);
+        btn.disabled = false;
+        btn.innerHTML = 'Add <span class="arrow">→</span>';
+        renderEnglish();
+        return;
+      }
+      // Confirm with user before adding the corrected version
+      var msg = '「' + raw + '」を「' + sc.correctedTo + '」として登録しますか？\n' +
+        (sc.reason ? '理由: ' + sc.reason + '\n' : '') +
+        '\nOK: 訂正版で登録 / キャンセル: 入力したまま登録';
+      if(!confirm(msg)){
+        // Keep original spelling
+        finalWord = raw;
+      } else {
+        finalWord = sc.correctedTo;
+      }
+    }
+
     var entry = {
       id: uid(),
-      word: data.word || raw,
+      word: finalWord,
       partOfSpeech: data.partOfSpeech || '',
       partOfSpeechJa: data.partOfSpeechJa || '',
       pronunciation: data.pronunciation || '',
@@ -3715,9 +4134,14 @@ async function addEnglishEntry(){
     state.englishEntries.unshift(entry);
     await saveAll();
     input.value = '';
+    document.getElementById('englishSuggestions').classList.remove('open');
     renderEnglish();
     openEnglishDetail(entry.id);
-    showToast('Added — ' + entry.word);
+    var toastMsg = 'Added — ' + entry.word;
+    if(sc && sc.wasCorrected && finalWord !== raw){
+      toastMsg = '「' + raw + '」→「' + finalWord + '」として登録';
+    }
+    showToast(toastMsg);
   }catch(err){
     console.error(err);
     showToast('Error: ' + (err.message || 'unknown'));
@@ -3736,7 +4160,162 @@ function renderEnglishLoading(word){
         '<span>Generating study card</span>' +
         '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>' +
       '</div>' +
+      '<div class="l-stream" id="lEngStream"></div>' +
     '</div>';
+}
+
+// English prediction cache
+var engPredictionsCache = {};
+async function fetchEnglishPredictions(prefix){
+  if(engPredictionsCache[prefix.toLowerCase()]) return engPredictionsCache[prefix.toLowerCase()];
+
+  var existingSample = state.englishEntries.slice(0, 12).map(function(e){ return e.word; }).join(', ');
+  var prompt =
+    'A user is typing an English word/phrase to add to their study deck. They\'re focused on: sustainability consulting, creative/editorial work, art theory, TED talks.\n\n' +
+    'Their existing deck includes: ' + (existingSample || '(empty)') + '\n\n' +
+    'They typed: "' + prefix + '"\n\n' +
+    'Suggest 4 real English words or phrases:\n' +
+    '- 1-2 MAY be spelling corrections if the input looks like a typo (e.g., "asthetic" → "aesthetic")\n' +
+    '- Others should match the prefix or be related and useful for their professional contexts\n' +
+    '- Each must be a REAL English word/phrase that exists in dictionaries\n' +
+    '- Skip anything already in their deck\n\n' +
+    'Return ONLY JSON, no preamble:\n' +
+    '{\n' +
+    '  "predictions": [\n' +
+    '    {"word": "actual english word", "hint": "short Japanese meaning (20-40 chars)", "isCorrection": true/false},\n' +
+    '    ...\n' +
+    '  ]\n' +
+    '}';
+
+  var headers = {'Content-Type':'application/json'};
+  if(settings.anthropicKey){
+    headers['x-api-key'] = settings.anthropicKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers: headers,
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      messages:[{role:'user', content: prompt}]
+    })
+  });
+  if(!res.ok) throw new Error('Pred ' + res.status);
+  var data = await res.json();
+  var textBlocks = (data.content || []).filter(function(c){ return c.type === 'text'; });
+  var fullText = textBlocks.map(function(c){ return c.text || ''; }).join('\n');
+  var parsed = extractJSON(fullText);
+  if(!parsed || !Array.isArray(parsed.predictions)) throw new Error('parse');
+  engPredictionsCache[prefix.toLowerCase()] = parsed.predictions.slice(0, 4);
+  return engPredictionsCache[prefix.toLowerCase()];
+}
+
+// Live suggestions for English input
+var engPredictionTimer = null;
+var engLastPredictionQuery = '';
+function renderEnglishSuggestions(){
+  var inputEl = document.getElementById('addEnglishInput');
+  var sugEl = document.getElementById('englishSuggestions');
+  if(!inputEl || !sugEl) return;
+  var q = inputEl.value.trim().toLowerCase();
+  if(!q || q.length < 1){
+    sugEl.classList.remove('open');
+    clearTimeout(engPredictionTimer);
+    return;
+  }
+  var matches = state.englishEntries.filter(function(e){
+    var w = (e.word || '').toLowerCase();
+    return w.indexOf(q) !== -1;
+  }).slice(0, 4);
+
+  var html = '';
+  if(matches.length > 0){
+    html += '<div class="sg-label">既にあるエントリ — タップで開く</div>';
+    matches.forEach(function(e){
+      html += '<div class="sg-item" data-sg-eng-id="' + e.id + '">' +
+        '<span class="sg-word">' + escapeHTML(e.word) + '</span>' +
+        '<span class="sg-meta">' +
+          '<span class="sg-cat">' + escapeHTML(e.partOfSpeech || '') + '</span>' +
+          escapeHTML((e.meaningJa || '').slice(0, 40)) +
+        '</span>' +
+      '</div>';
+    });
+  }
+
+  html += '<div class="sg-predictions" id="engSgPredictions"></div>';
+  sugEl.innerHTML = html;
+  sugEl.classList.add('open');
+  sugEl.querySelectorAll('.sg-item').forEach(function(item){
+    item.addEventListener('mousedown', function(ev){
+      ev.preventDefault();
+      var id = item.getAttribute('data-sg-eng-id');
+      inputEl.value = '';
+      sugEl.classList.remove('open');
+      openEnglishDetail(id);
+    });
+  });
+
+  clearTimeout(engPredictionTimer);
+  if(q.length >= 2){
+    engPredictionTimer = setTimeout(function(){
+      if(q === engLastPredictionQuery){
+        renderEnglishPredictionsList(engPredictionsCache[q] || null);
+        return;
+      }
+      engLastPredictionQuery = q;
+      var predEl = document.getElementById('engSgPredictions');
+      if(predEl) predEl.innerHTML = '<div class="sg-pred-loading">候補を検索しています…</div>';
+      fetchEnglishPredictions(q).then(function(preds){
+        if(inputEl.value.trim().toLowerCase() === q){
+          renderEnglishPredictionsList(preds);
+        }
+      }).catch(function(err){
+        console.warn('eng prediction failed:', err.message);
+        var pe = document.getElementById('engSgPredictions');
+        if(pe) pe.innerHTML = '';
+      });
+    }, 600);
+  }
+}
+
+function renderEnglishPredictionsList(preds){
+  var predEl = document.getElementById('engSgPredictions');
+  if(!predEl || !preds || preds.length === 0){
+    if(predEl) predEl.innerHTML = '';
+    return;
+  }
+  preds = preds.filter(function(p){
+    return !state.englishEntries.some(function(e){
+      return (e.word || '').toLowerCase() === (p.word || '').toLowerCase();
+    });
+  });
+  if(preds.length === 0){ predEl.innerHTML = ''; return; }
+
+  var hasCorrection = preds.some(function(p){ return p.isCorrection; });
+  var labelText = hasCorrection ? 'もしかして？ もしくは関連語' : '関連する英単語の候補';
+  var html = '<div class="sg-label sg-pred-label">' + labelText + '</div>';
+  preds.forEach(function(p){
+    var iconHTML = p.isCorrection ? '<span class="sg-pred-fix">✎</span> ' : '';
+    html += '<div class="sg-pred-item">' +
+      '<div class="sg-pred-main">' +
+        '<span class="sg-word">' + iconHTML + escapeHTML(p.word) + '</span>' +
+        '<span class="sg-pred-hint">' + escapeHTML(p.hint || '') + '</span>' +
+      '</div>' +
+      '<button class="sg-pred-add" data-eng-pred="' + escapeHTML(p.word) + '">+ add</button>' +
+    '</div>';
+  });
+  predEl.innerHTML = html;
+  predEl.querySelectorAll('.sg-pred-add').forEach(function(btn){
+    btn.addEventListener('mousedown', async function(ev){
+      ev.preventDefault();
+      var word = btn.getAttribute('data-eng-pred');
+      var input = document.getElementById('addEnglishInput');
+      input.value = word;
+      document.getElementById('englishSuggestions').classList.remove('open');
+      await addEnglishEntry();
+    });
+  });
 }
 
 // ---------- TEXT-TO-SPEECH ----------
@@ -3995,13 +4574,13 @@ function openEnglishDetail(id){
 
   var examplesHTML = '';
   if(entry.examples && entry.examples.length){
-    examplesHTML = '<div class="section"><div class="section-label">Example sentences · 例文</div>';
+    examplesHTML = '<div class="section"><div class="section-label">Example sentences · 例文 <span class="hint-sm">単語ホバー → 追加</span></div>';
     entry.examples.forEach(function(ex, i){
       examplesHTML +=
         '<div class="example-item">' +
           '<div class="ex-en">' +
             '<span class="ex-num">' + (i+1) + '.</span>' +
-            '<span class="ex-text">' + escapeHTML(ex.en || '') + '</span>' +
+            '<span class="ex-text">' + highlightInExample(ex.en || '', entry.word) + '</span>' +
             '<button class="ex-speak" data-ex-text="' + escapeHTML(ex.en || '') + '">♪</button>' +
           '</div>' +
           '<div class="ex-ja">' + escapeHTML(ex.ja || '') + '</div>' +
@@ -4102,6 +4681,24 @@ function openEnglishDetail(id){
       renderEnglish();
       showToast('削除しました');
     }
+  });
+
+  // Wire up interactive words in examples
+  body.querySelectorAll('.ex-word').forEach(function(el){
+    var word = el.getAttribute('data-word');
+    if(!word) return;
+    var hoverTimer = null;
+    el.addEventListener('mouseenter', function(){
+      hoverTimer = setTimeout(function(){ showWordPopover(el, word, entry.word); }, 250);
+    });
+    el.addEventListener('mouseleave', function(){
+      clearTimeout(hoverTimer);
+    });
+    // Also tap on mobile
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      showWordPopover(el, word, entry.word);
+    });
   });
 
   document.getElementById('overlay').classList.add('open');
@@ -4305,6 +4902,14 @@ document.querySelectorAll('.mode-btn').forEach(function(b){
 document.getElementById('addEnglishBtn').addEventListener('click', addEnglishEntry);
 document.getElementById('addEnglishInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter' && !e.isComposing) addEnglishEntry();
+});
+document.getElementById('addEnglishInput').addEventListener('input', renderEnglishSuggestions);
+document.getElementById('addEnglishInput').addEventListener('blur', function(){
+  setTimeout(function(){
+    if(document.activeElement !== document.getElementById('addEnglishInput')){
+      document.getElementById('englishSuggestions').classList.remove('open');
+    }
+  }, 200);
 });
 document.getElementById('englishSearchFilter').addEventListener('input', function(e){
   state.englishFilter.search = e.target.value;
