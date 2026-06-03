@@ -1427,6 +1427,106 @@
     font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
     font-size:14px;color:var(--ink-soft);line-height:1.65;
   }
+  .news-title-link{
+    display:block;
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:600;
+    font-size:16px;color:var(--ink);line-height:1.4;margin-bottom:5px;
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    transition:border-color 0.15s, color 0.15s;
+  }
+  .news-title-link:hover{
+    color:var(--accent);
+    border-bottom-color:var(--accent);
+  }
+  .news-arrow{
+    font-size:13px;color:var(--ink-mute);
+    transition:transform 0.15s;display:inline-block;margin-left:2px;
+  }
+  .news-title-link:hover .news-arrow{
+    transform:translate(2px, -2px);color:var(--accent);
+  }
+
+  /* ========= CHAT ========= */
+  .chat-area{
+    max-height:480px;overflow-y:auto;
+    padding:4px 0 12px;margin-bottom:16px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .chat-empty{
+    font-family:'Newsreader','Noto Serif JP',serif;font-style:italic;
+    color:var(--ink-mute);font-size:14px;padding:18px 0;text-align:center;
+  }
+  .chat-msg{
+    padding:14px 16px;
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
+    font-size:14.5px;line-height:1.7;
+    position:relative;
+  }
+  .chat-user{
+    background:var(--card);
+    border-left:3px solid var(--ink-mute);
+    color:var(--ink);
+    margin-left:18px;
+    padding-right:36px;
+  }
+  .chat-user .chat-text{font-weight:500;}
+  .chat-ai{
+    background:transparent;
+    border-left:3px solid var(--accent);
+    color:var(--ink-soft);
+    margin-right:18px;
+    padding-left:18px;
+  }
+  .chat-marker{
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:9px;
+    letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .chat-delete{
+    position:absolute;top:8px;right:8px;
+    background:transparent;border:none;
+    width:22px;height:22px;cursor:pointer;
+    font-size:16px;color:var(--ink-mute);line-height:1;
+    border-radius:50%;
+    opacity:0;transition:opacity 0.15s,color 0.15s;
+  }
+  .chat-user:hover .chat-delete{opacity:0.5;}
+  .chat-delete:hover{opacity:1 !important;color:var(--accent);}
+  .chat-input-row{
+    display:flex;gap:10px;align-items:stretch;
+  }
+  .chat-input{
+    flex:1;padding:12px 14px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;font-size:14.5px;
+    line-height:1.5;resize:vertical;min-height:48px;
+    outline:none;transition:border-color 0.15s;
+  }
+  .chat-input:focus{border-color:var(--ink);}
+  .chat-input::placeholder{
+    color:var(--ink-mute);font-style:italic;font-size:13.5px;
+  }
+  .chat-send{
+    padding:0 18px;background:var(--ink);color:var(--bg);
+    border:1px solid var(--ink);cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:11px;
+    letter-spacing:0.2em;text-transform:uppercase;
+    display:flex;align-items:center;gap:6px;
+    transition:all 0.15s;align-self:flex-start;height:48px;
+  }
+  .chat-send:hover:not(:disabled){background:var(--accent);border-color:var(--accent);}
+  .chat-send:disabled{opacity:0.5;cursor:wait;}
+  .chat-send .arrow{
+    font-family:'Newsreader',serif;font-style:italic;font-size:16px;letter-spacing:0;
+  }
+  .model-tag{
+    display:inline-block;margin-left:10px;
+    font-family:'IBM Plex Mono',monospace;font-weight:400;
+    font-size:9px;color:var(--ink-mute);letter-spacing:0.06em;
+    padding:2px 7px;border:1px solid var(--line);border-radius:999px;
+    text-transform:none;vertical-align:middle;
+  }
 
   /* Images grid */
   .img-grid{
@@ -1565,7 +1665,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v21</span>
+    <span class="version-badge">v23</span>
   </div>
   <nav class="mode-toggle">
     <button class="mode-btn active" data-mode="lexicon">
@@ -2812,6 +2912,15 @@ function openDetail(id){
     '</div>' +
 
     '<div class="section">' +
+      '<div class="section-label">Continue inquiry · さらに聞く <span class="model-tag">Sonnet 4.6</span></div>' +
+      '<div class="chat-area" id="chatArea"></div>' +
+      '<div class="chat-input-row">' +
+        '<textarea class="chat-input" id="chatInput" placeholder="この用語について追加質問 — 「もっと深く教えて」「具体例は？」「批判的視点は？」など" rows="2"></textarea>' +
+        '<button class="chat-send" id="chatSendBtn">Ask <span class="arrow">→</span></button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="section">' +
       '<div class="section-label">Notes</div>' +
       '<textarea class="notes-area" id="notesArea" placeholder="自由に書き込めます — 出典、引用、自分の考え、出会った場面…">' + escapeHTML(entry.notes || '') + '</textarea>' +
     '</div>' +
@@ -2937,6 +3046,140 @@ function openDetail(id){
   loadNewsForEntry(entry);
   loadSuggestionsForEntry(entry);
   loadImagesForEntry(entry);
+  initChat(entry);
+}
+
+function initChat(entry){
+  if(!entry.chatHistory) entry.chatHistory = [];
+  renderChatHistory(entry);
+  var sendBtn = document.getElementById('chatSendBtn');
+  var input = document.getElementById('chatInput');
+  if(!sendBtn || !input) return;
+  sendBtn.onclick = function(){ sendChatMessage(entry); };
+  input.onkeydown = function(e){
+    // Cmd/Ctrl + Enter sends
+    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.isComposing){
+      e.preventDefault();
+      sendChatMessage(entry);
+    }
+  };
+}
+
+function renderChatHistory(entry){
+  var area = document.getElementById('chatArea');
+  if(!area) return;
+  if(!entry.chatHistory || entry.chatHistory.length === 0){
+    area.innerHTML = '<div class="chat-empty">まだ質問がありません。下から続けて聞いてみましょう。</div>';
+    return;
+  }
+  var html = '';
+  entry.chatHistory.forEach(function(m, i){
+    var role = m.role === 'user' ? 'user' : 'ai';
+    html += '<div class="chat-msg chat-' + role + '">';
+    if(role === 'ai') html += '<div class="chat-marker">AI</div>';
+    html += '<div class="chat-text">' + formatChatText(m.text || '') + '</div>';
+    if(role === 'user'){
+      html += '<button class="chat-delete" data-chat-idx="' + i + '" title="削除">×</button>';
+    }
+    html += '</div>';
+  });
+  area.innerHTML = html;
+  area.querySelectorAll('.chat-delete').forEach(function(btn){
+    btn.onclick = function(){
+      var idx = parseInt(btn.getAttribute('data-chat-idx'), 10);
+      // Remove the user message and the AI response that follows it (if any)
+      var removeCount = 1;
+      if(entry.chatHistory[idx+1] && entry.chatHistory[idx+1].role === 'assistant'){
+        removeCount = 2;
+      }
+      entry.chatHistory.splice(idx, removeCount);
+      entry.updatedAt = Date.now();
+      queueSave();
+      renderChatHistory(entry);
+    };
+  });
+  // Scroll to bottom
+  area.scrollTop = area.scrollHeight;
+}
+function formatChatText(text){
+  // Render plain text with line breaks, escaping HTML
+  return escapeHTML(text).replace(/\n/g, '<br>');
+}
+
+async function sendChatMessage(entry){
+  var input = document.getElementById('chatInput');
+  var sendBtn = document.getElementById('chatSendBtn');
+  var msg = input.value.trim();
+  if(!msg) return;
+
+  if(!entry.chatHistory) entry.chatHistory = [];
+  // Add user msg
+  entry.chatHistory.push({role:'user', text:msg, ts:Date.now()});
+  // Placeholder for assistant
+  var assistantIdx = entry.chatHistory.length;
+  entry.chatHistory.push({role:'assistant', text:'', ts:Date.now()});
+
+  input.value = '';
+  input.disabled = true;
+  sendBtn.disabled = true;
+  renderChatHistory(entry);
+
+  // Build system context from entry
+  var systemPrompt =
+    'あなたはユーザーが個人辞書に登録した用語「' + entry.word + '」について、対話形式で深掘りする手助けをします。\n\n' +
+    '【登録された情報】\n' +
+    'カテゴリ: ' + (entry.category || '未分類') + '\n' +
+    '訳: ' + (entry.translation || '') + '\n' +
+    '基本説明: ' + (entry.meaningSimple || '') + '\n' +
+    (entry.meaningAdult ? '詳細: ' + entry.meaningAdult + '\n' : '') +
+    (entry.relatedTerms && entry.relatedTerms.length ? '関連用語: ' + entry.relatedTerms.join(', ') + '\n' : '') +
+    '\nユーザーは編集・サステナビリティ・芸術思想の領域で活動しています。\n' +
+    '応答は日本語、簡潔（300字程度）、しかし内容は具体的に。冗長な前置きは避ける。\n' +
+    'マークダウンの太字や見出し記号は使わず、自然な文章で。';
+
+  // Build messages from history (excluding the empty assistant placeholder)
+  var messages = [];
+  var history = entry.chatHistory.slice(0, -1);
+  history.forEach(function(m){
+    messages.push({role: m.role, content: m.text});
+  });
+
+  try{
+    await streamAnthropic(messages, {
+      model: 'claude-sonnet-4-6',
+      system: systemPrompt,
+      max_tokens: 1200
+    }, function(streamedText){
+      // Update assistant message in place
+      entry.chatHistory[assistantIdx].text = streamedText;
+      // Re-render only the last message for performance
+      updateStreamingChatMessage(streamedText);
+    });
+    entry.chatHistory[assistantIdx].ts = Date.now();
+    entry.updatedAt = Date.now();
+    queueSave();
+    renderChatHistory(entry);
+  }catch(err){
+    entry.chatHistory[assistantIdx].text = 'エラー: ' + (err.message || 'unknown');
+    renderChatHistory(entry);
+  }finally{
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function updateStreamingChatMessage(text){
+  var area = document.getElementById('chatArea');
+  if(!area) return;
+  var msgs = area.querySelectorAll('.chat-ai');
+  if(msgs.length === 0) return;
+  var lastMsg = msgs[msgs.length - 1];
+  var textEl = lastMsg.querySelector('.chat-text');
+  if(textEl){
+    textEl.innerHTML = formatChatText(text);
+    area.scrollTop = area.scrollHeight;
+  }
 }
 
 function loadImagesForEntry(entry){
@@ -3025,10 +3268,13 @@ function renderNews(news){
   }
   var html = '';
   news.forEach(function(item){
+    var searchURL = 'https://www.google.com/search?q=' + encodeURIComponent(item.title || '');
     html +=
       '<div class="news-item">' +
         '<div class="news-when">' + escapeHTML(item.when || '') + '</div>' +
-        '<div class="news-title">' + escapeHTML(item.title || '') + '</div>' +
+        '<a class="news-title-link" href="' + searchURL + '" target="_blank" rel="noopener">' +
+          escapeHTML(item.title || '') + ' <span class="news-arrow">↗</span>' +
+        '</a>' +
         '<div class="news-summary">' + escapeHTML(item.summary || '') + '</div>' +
       '</div>';
   });
@@ -4124,19 +4370,24 @@ function outsidePopoverClick(e){
 // ============================================================
 // STREAMING API HELPER — shows progress as text streams in
 // ============================================================
-async function streamAnthropic(prompt, options, onChunk){
+async function streamAnthropic(promptOrMessages, options, onChunk){
   var headers = {'Content-Type':'application/json'};
   if(settings.anthropicKey){
     headers['x-api-key'] = settings.anthropicKey;
     headers['anthropic-version'] = '2023-06-01';
     headers['anthropic-dangerous-direct-browser-access'] = 'true';
   }
+  // Accept either a plain prompt string or an array of messages
+  var messages = Array.isArray(promptOrMessages)
+    ? promptOrMessages
+    : [{role:'user', content: promptOrMessages}];
   var body = {
     model: (options && options.model) || 'claude-haiku-4-5-20251001',
     max_tokens: (options && options.max_tokens) || 2000,
-    messages: [{role:'user', content: prompt}],
+    messages: messages,
     stream: true
   };
+  if(options && options.system) body.system = options.system;
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST', headers: headers, body: JSON.stringify(body)
   });
