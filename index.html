@@ -1528,6 +1528,64 @@
     text-transform:none;vertical-align:middle;
   }
 
+  /* Selection → add to dictionary button */
+  .selection-add-btn{
+    position:fixed;display:none;
+    align-items:center;gap:8px;
+    background:var(--ink);color:var(--bg);
+    border:none;padding:9px 14px;border-radius:999px;
+    cursor:pointer;z-index:300;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:12px;letter-spacing:0.02em;
+    animation:saFade 0.18s ease-out;
+    transition:background 0.15s;
+  }
+  .selection-add-btn:hover:not(:disabled){background:var(--accent);}
+  .selection-add-btn:disabled{opacity:0.7;cursor:wait;}
+  .selection-add-btn .sa-plus{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:600;
+    font-size:18px;line-height:1;color:var(--accent);
+  }
+  .selection-add-btn:hover:not(:disabled) .sa-plus{color:var(--bg);}
+  .selection-add-btn .sa-text{
+    font-family:'Noto Sans JP','IBM Plex Sans',sans-serif;
+  }
+  @keyframes saFade{
+    from{opacity:0;transform:translateY(-4px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  /* Toast action button */
+  .toast-action{
+    margin-left:14px;background:transparent;border:1px solid rgba(255,255,255,0.4);
+    color:var(--bg);padding:3px 11px;border-radius:999px;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:11px;
+    letter-spacing:0.08em;transition:all 0.15s;
+  }
+  .toast-action:hover{background:rgba(255,255,255,0.15);}
+
+  /* Business context section */
+  .biz-context-section{
+    border-left:2px solid var(--accent);
+    padding-left:18px;background:linear-gradient(to right, rgba(199,62,43,0.025), transparent 60%);
+  }
+  .biz-context{
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
+    font-size:15px;line-height:1.85;color:var(--ink);letter-spacing:0.005em;
+  }
+  /* SX consulting context section */
+  .sx-context-section{
+    border-left:2px solid #3F6B2E;
+    padding-left:18px;
+    background:linear-gradient(to right, rgba(63,107,46,0.03), transparent 60%);
+  }
+  .sx-context{
+    font-family:'Newsreader','Noto Serif JP',serif;font-weight:400;
+    font-size:15px;line-height:1.85;color:var(--ink);letter-spacing:0.005em;
+  }
+  .sx-context-section .section-label{color:#3F6B2E;}
+
   /* Images grid */
   .img-grid{
     display:grid;grid-template-columns:repeat(2, 1fr);gap:10px;
@@ -1665,7 +1723,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v23</span>
+    <span class="version-badge">v27</span>
   </div>
   <nav class="mode-toggle">
     <button class="mode-btn active" data-mode="lexicon">
@@ -2019,11 +2077,32 @@ function formatDate(ts){
   var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear();
 }
-function showToast(msg, duration){
+function showToast(msg, durationOrOptions){
   var t = document.getElementById('toast');
-  t.textContent = msg;
+  var duration = 2400;
+  var actionLabel, actionFn;
+  if(typeof durationOrOptions === 'number'){
+    duration = durationOrOptions;
+  } else if(durationOrOptions && typeof durationOrOptions === 'object'){
+    duration = durationOrOptions.duration || 2400;
+    actionLabel = durationOrOptions.actionLabel;
+    actionFn = durationOrOptions.actionFn;
+  }
+  if(actionLabel && actionFn){
+    t.innerHTML = '<span class="toast-msg">' + escapeHTML(msg) + '</span><button class="toast-action" id="toastActionBtn">' + escapeHTML(actionLabel) + '</button>';
+    setTimeout(function(){
+      var btn = document.getElementById('toastActionBtn');
+      if(btn) btn.onclick = function(ev){
+        ev.stopPropagation();
+        actionFn();
+        t.classList.remove('show');
+      };
+    }, 10);
+  } else {
+    t.textContent = msg;
+  }
   t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, duration || 2400);
+  setTimeout(function(){ t.classList.remove('show'); }, duration);
 }
 function isJapanese(s){ return /[\u3040-\u30FF\u4E00-\u9FFF]/.test(s || ''); }
 
@@ -2255,27 +2334,37 @@ function loadSamples(){
 async function fetchEntry(word, onProgress){
   var prompt =
     '日本語の個人辞書エントリ: "' + word + '"\n\n' +
-    '言語判定 (ja/en) → 慎重にリサーチ:\n' +
-    '- ブランド/技術(例: 燃えんWOOD): 開発元企業を明記\n' +
+    'ユーザーは PwC のサステナビリティ・コンサルタント。編集（ZOCCON）、tiger bae（音楽）にも携わる。\n\n' +
+    '【最重要】複数意味のある単語は、ビジネス/金融/経済/法務/専門分野の意味を優先して説明する。\n' +
+    '例: "vehicle"→投資ビークル(SPV等)、"leverage"→レバレッジ経営、"liquidity"→流動性、"organic"→オーガニック認証/有機的成長、"runway"→キャッシュランウェイ、"pivot"→事業転換\n\n' +
+    '【特に重要】3-5文字の略語(LEAP/TNFD/CSRD/CBAM/SBTi/ISSB/CSDDD/PCAF/WACI/JCM/SDR等)は、一般語より以下を優先して調べる:\n' +
+    '・サステナビリティ/環境関連フレームワーク・基準・規制\n' +
+    '・金融/会計/法務の専門用語\n' +
+    '・ビジネス戦略・経営学の概念\n' +
+    'これらに該当する場合は、その専門分野での意味を主に説明する。\n\n' +
+    '言語判定 (ja/en) → リサーチ:\n' +
+    '- ブランド/技術: 開発元企業\n' +
     '- 概念/フレームワーク: 提唱者と年\n' +
-    '- 人物: 主な業績、分野、時代\n' +
-    '- 現象/文化用語: 起源\n\n' +
-    'JSONのみ返す（前置き・マークダウン不要）:\n' +
+    '- 人物: 業績、分野、時代\n' +
+    '- ビジネス/金融用語: 専門的定義を主に\n\n' +
+    'JSONのみ返す（前置き不要）:\n' +
     '{\n' +
     '"language":"ja|en",\n' +
     '"word":"入力通り",\n' +
     '"translation":"反対言語の訳",\n' +
-    '"spelling":"英語入力時のみ綴り、和文時は空",\n' +
-    '"pronunciation":"英語入力時のみ IPA、和文時は空",\n' +
-    '"category":"単一カテゴリ(哲学/技術/芸術/概念/環境/人物等)",\n' +
-    '"meaningSimple":"中学生向け説明 80-150字。開発元・起源も含める",\n' +
-    '"meaningAdult":"大人向け説明 250-400字。(a)開発者/提唱者(b)年(c)他との違い(d)語源(e)現代の意義。具体的に。",\n' +
+    '"spelling":"英語入力時のみ",\n' +
+    '"pronunciation":"英語入力時のみ IPA",\n' +
+    '"category":"単一カテゴリ(経済/金融/法務/技術/哲学/芸術/概念/環境/人物等)。ビジネス用語は経済/金融/経営など適切な専門分野を選ぶ",\n' +
+    '"meaningSimple":"中学生向け説明 80-150字。多義語は専門・ビジネス的意味を優先",\n' +
+    '"meaningAdult":"大人向け説明 250-400字。多義語の場合は専門/ビジネス分野での定義を主とし、一般的意味は補足程度に。(a)開発者/提唱者(b)年代(c)他との違い(d)語源(e)現代の意義。具体的に。",\n' +
+    '"businessContext":"ビジネス/金融/経済/法務/経営の用語の場合のみ、300-450字で:\\n・米国型(アングロサクソン資本主義)での使い方や含意\\n・欧州型(ステークホルダー資本主義/EU規制)での違い\\n・中国(国家資本主義)での扱い\\n・日本(関係性資本主義/系列)での文脈\\n・規制差や政治的含意・地域別の具体事例\\n用語でない場合は空文字 \\"\\"",\n' +
+    '"sxContext":"サステナビリティ・コンサル実務に関連する場合のみ300-450字で:\\n・関連する国際フレームワーク/基準(TCFD/TNFD/ISSB/SBTi/CSRD/GRI/GHG Protocol/CDP等)\\n・直近の規制・政策動向(EU CSRD・CSDDD、米SEC、日本SSBJ・GX-ETS等)\\n・主要プレイヤー(国連系・認証団体・NGO・主要コンサルファーム)\\n・実務上の論点(グリーンウォッシュリスク・スコープ3測定の困難・移行金融など)\\n・PwC/Deloitte/EY/KPMG/McKinsey/BCG/Bain等の典型アプローチの違い(分かる範囲)\\nSXコンサル実務と関連薄い純粋哲学/芸術/文学用語などは空文字 \\"\\"",\n' +
     '"relatedTerms":["4-6個、主に日本語"],\n' +
     '"relatedMovies":["3-5本、邦題(英題, 監督, 年)"]\n' +
     '}\n' +
     '日本語で。固有名詞を具体的に。JSONのみ。';
 
-  var fullText = await streamAnthropic(prompt, {max_tokens: 1800}, onProgress);
+  var fullText = await streamAnthropic(prompt, {max_tokens: 2800}, onProgress);
   var parsed = extractJSON(fullText);
   if(!parsed) throw new Error('JSON抽出失敗: ' + fullText.slice(0,80));
   return parsed;
@@ -2532,6 +2621,8 @@ async function addEntry(){
       meaningAdult: data.meaningAdult || '',
       relatedTerms: Array.isArray(data.relatedTerms) ? data.relatedTerms : [],
       relatedMovies: Array.isArray(data.relatedMovies) ? data.relatedMovies : [],
+      businessContext: data.businessContext || '',
+      sxContext: data.sxContext || '',
       notes: '',
       tags: [],
       viewCount: 0,
@@ -2895,6 +2986,16 @@ function openDetail(id){
       '<div class="section">' +
         '<div class="section-label">In full</div>' +
         '<div class="section-content">' + escapeHTML(entry.meaningAdult) + '</div>' +
+      '</div>' : '') +
+    (entry.businessContext ?
+      '<div class="section biz-context-section">' +
+        '<div class="section-label">Business context · 地政学・経済体制文脈</div>' +
+        '<div class="section-content biz-context">' + escapeHTML(entry.businessContext).replace(/\n/g, '<br>') + '</div>' +
+      '</div>' : '') +
+    (entry.sxContext ?
+      '<div class="section sx-context-section">' +
+        '<div class="section-label">Practice notes · SXコンサル実務文脈</div>' +
+        '<div class="section-content sx-context">' + escapeHTML(entry.sxContext).replace(/\n/g, '<br>') + '</div>' +
       '</div>' : '') +
     (relTermsHTML ?
       '<div class="section">' +
@@ -3356,6 +3457,8 @@ function renderSuggestionsList(suggs){
           meaningAdult: data.meaningAdult || '',
           relatedTerms: Array.isArray(data.relatedTerms) ? data.relatedTerms : [],
           relatedMovies: Array.isArray(data.relatedMovies) ? data.relatedMovies : [],
+      businessContext: data.businessContext || '',
+      sxContext: data.sxContext || '',
           notes: '', tags: [], viewCount: 0, lastViewedAt: 0,
           createdAt: Date.now(), updatedAt: Date.now()
         };
@@ -5338,6 +5441,127 @@ document.getElementById('englishSortSelect').addEventListener('change', function
   state.englishFilter.sort = e.target.value;
   renderEnglishEntries();
 });
+
+// Add an entry without changing the current detail view (used by chat-selection add)
+async function addEntryQuiet(word){
+  var clean = (word || '').trim();
+  if(!clean) throw new Error('empty');
+  var dup = state.entries.find(function(e){
+    return (e.word || '').trim().toLowerCase() === clean.toLowerCase();
+  });
+  if(dup) return {entry: dup, isDuplicate: true};
+
+  var data = await fetchEntry(clean);
+  var entry = {
+    id: uid(),
+    word: data.word || clean,
+    language: data.language || (isJapanese(clean) ? 'ja' : 'en'),
+    translation: data.translation || '',
+    spelling: data.spelling || '',
+    pronunciation: data.pronunciation || '',
+    category: data.category || '未分類',
+    meaningSimple: data.meaningSimple || '',
+    meaningAdult: data.meaningAdult || '',
+    relatedTerms: Array.isArray(data.relatedTerms) ? data.relatedTerms : [],
+    relatedMovies: Array.isArray(data.relatedMovies) ? data.relatedMovies : [],
+      businessContext: data.businessContext || '',
+      sxContext: data.sxContext || '',
+    notes: '', tags: [], viewCount: 0, lastViewedAt: 0,
+    createdAt: Date.now(), updatedAt: Date.now()
+  };
+  state.entries.unshift(entry);
+  await saveAll();
+  return {entry: entry, isDuplicate: false};
+}
+
+// ---------- TEXT SELECTION → ADD TO DICTIONARY ----------
+function ensureSelectionButton(){
+  var btn = document.getElementById('selectionAddBtn');
+  if(!btn){
+    btn = document.createElement('button');
+    btn.id = 'selectionAddBtn';
+    btn.className = 'selection-add-btn';
+    document.body.appendChild(btn);
+  }
+  return btn;
+}
+function hideSelectionButton(){
+  var btn = document.getElementById('selectionAddBtn');
+  if(btn) btn.style.display = 'none';
+}
+function showSelectionButton(text, range){
+  var btn = ensureSelectionButton();
+  var preview = text.length > 18 ? text.slice(0, 18) + '…' : text;
+  btn.innerHTML = '<span class="sa-plus">+</span><span class="sa-text">「' + escapeHTML(preview) + '」を辞書に追加</span>';
+  btn.style.display = 'inline-flex';
+  btn.disabled = false;
+  var rect = range.getBoundingClientRect();
+  var btnWidth = btn.offsetWidth || 280;
+  var left = rect.left + (rect.width / 2) - (btnWidth / 2);
+  left = Math.max(12, Math.min(window.innerWidth - btnWidth - 12, left));
+  var top = rect.bottom + 8;
+  if(top + 50 > window.innerHeight){ top = Math.max(12, rect.top - 48); }
+  btn.style.left = left + 'px';
+  btn.style.top = top + 'px';
+  btn.onclick = async function(ev){
+    ev.stopPropagation();
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="sa-plus">…</span><span class="sa-text">追加中</span>';
+    try{
+      var result = await addEntryQuiet(text);
+      hideSelectionButton();
+      window.getSelection().removeAllRanges();
+      if(result.isDuplicate){
+        showToast('既にあります: ' + result.entry.word, {
+          duration: 4000,
+          actionLabel: 'open →',
+          actionFn: function(){ openDetail(result.entry.id); }
+        });
+      }else{
+        showToast('追加: ' + result.entry.word, {
+          duration: 5000,
+          actionLabel: 'open →',
+          actionFn: function(){ openDetail(result.entry.id); }
+        });
+        render();
+      }
+    }catch(err){
+      hideSelectionButton();
+      showToast('エラー: ' + (err.message || 'unknown'));
+    }
+  };
+}
+function handleTextSelection(){
+  var sel = window.getSelection();
+  if(!sel || sel.rangeCount === 0 || sel.isCollapsed){
+    hideSelectionButton();
+    return;
+  }
+  var text = sel.toString().trim();
+  if(!text || text.length < 2 || text.length > 60){
+    hideSelectionButton();
+    return;
+  }
+  var range = sel.getRangeAt(0);
+  var node = range.commonAncestorContainer;
+  while(node && node.nodeType !== 1) node = node.parentNode;
+  if(!node || !node.closest('.detail-panel') || node.closest('.notes-area') || node.closest('input') || node.closest('textarea')){
+    hideSelectionButton();
+    return;
+  }
+  showSelectionButton(text, range);
+}
+document.addEventListener('mouseup', function(){ setTimeout(handleTextSelection, 30); });
+document.addEventListener('touchend', function(){ setTimeout(handleTextSelection, 50); });
+document.addEventListener('click', function(e){
+  var btn = document.getElementById('selectionAddBtn');
+  if(btn && btn.style.display === 'inline-flex' && !btn.contains(e.target)){
+    var sel = window.getSelection();
+    if(!sel || sel.isCollapsed) hideSelectionButton();
+  }
+});
+window.addEventListener('scroll', function(){ hideSelectionButton(); }, true);
 
 // Restore last mode
 (async function(){
