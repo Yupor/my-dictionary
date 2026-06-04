@@ -1723,7 +1723,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v27</span>
+    <span class="version-badge">v28</span>
   </div>
   <nav class="mode-toggle">
     <button class="mode-btn active" data-mode="lexicon">
@@ -2337,11 +2337,12 @@ async function fetchEntry(word, onProgress){
     'ユーザーは PwC のサステナビリティ・コンサルタント。編集（ZOCCON）、tiger bae（音楽）にも携わる。\n\n' +
     '【最重要】複数意味のある単語は、ビジネス/金融/経済/法務/専門分野の意味を優先して説明する。\n' +
     '例: "vehicle"→投資ビークル(SPV等)、"leverage"→レバレッジ経営、"liquidity"→流動性、"organic"→オーガニック認証/有機的成長、"runway"→キャッシュランウェイ、"pivot"→事業転換\n\n' +
-    '【特に重要】3-5文字の略語(LEAP/TNFD/CSRD/CBAM/SBTi/ISSB/CSDDD/PCAF/WACI/JCM/SDR等)は、一般語より以下を優先して調べる:\n' +
+    '【特に重要】3-6文字の略語(LEAP/TNFD/CSRD/CBAM/SBTi/ISSB/CSDDD/PCAF/WACI/JCM/SDR/TISFD/IFRS S1/S2等)は、一般語より以下を優先して調べる:\n' +
     '・サステナビリティ/環境関連フレームワーク・基準・規制\n' +
     '・金融/会計/法務の専門用語\n' +
     '・ビジネス戦略・経営学の概念\n' +
     'これらに該当する場合は、その専門分野での意味を主に説明する。\n\n' +
+    '【未知の略語・新しい用語の場合】見覚えのない略語や2023年以降の新しいフレームワーク・規制・概念が入力された場合は、必ず web_search ツールを使って正確な情報を取得してから回答する。あいまいな知識のまま回答してはいけない。\n\n' +
     '言語判定 (ja/en) → リサーチ:\n' +
     '- ブランド/技術: 開発元企業\n' +
     '- 概念/フレームワーク: 提唱者と年\n' +
@@ -2354,7 +2355,7 @@ async function fetchEntry(word, onProgress){
     '"translation":"反対言語の訳",\n' +
     '"spelling":"英語入力時のみ",\n' +
     '"pronunciation":"英語入力時のみ IPA",\n' +
-    '"category":"単一カテゴリ(経済/金融/法務/技術/哲学/芸術/概念/環境/人物等)。ビジネス用語は経済/金融/経営など適切な専門分野を選ぶ",\n' +
+    '"category":"単一カテゴリ(経済/金融/法務/技術/哲学/芸術/概念/環境/人物等)",\n' +
     '"meaningSimple":"中学生向け説明 80-150字。多義語は専門・ビジネス的意味を優先",\n' +
     '"meaningAdult":"大人向け説明 250-400字。多義語の場合は専門/ビジネス分野での定義を主とし、一般的意味は補足程度に。(a)開発者/提唱者(b)年代(c)他との違い(d)語源(e)現代の意義。具体的に。",\n' +
     '"businessContext":"ビジネス/金融/経済/法務/経営の用語の場合のみ、300-450字で:\\n・米国型(アングロサクソン資本主義)での使い方や含意\\n・欧州型(ステークホルダー資本主義/EU規制)での違い\\n・中国(国家資本主義)での扱い\\n・日本(関係性資本主義/系列)での文脈\\n・規制差や政治的含意・地域別の具体事例\\n用語でない場合は空文字 \\"\\"",\n' +
@@ -2364,7 +2365,11 @@ async function fetchEntry(word, onProgress){
     '}\n' +
     '日本語で。固有名詞を具体的に。JSONのみ。';
 
-  var fullText = await streamAnthropic(prompt, {max_tokens: 2800}, onProgress);
+  var fullText = await streamAnthropic(prompt, {
+    model: 'claude-sonnet-4-6',
+    max_tokens: 3000,
+    tools: [{type: 'web_search_20250305', name: 'web_search', max_uses: 3}]
+  }, onProgress);
   var parsed = extractJSON(fullText);
   if(!parsed) throw new Error('JSON抽出失敗: ' + fullText.slice(0,80));
   return parsed;
@@ -2661,10 +2666,7 @@ function updateLoadingProgress(streamedText){
   var el = document.getElementById('lStream');
   if(!el) el = document.getElementById('lEngStream');
   if(!el) return;
-  // Extract value from JSON-ish stream to display nicely
-  // Simply show character count and the most recent fragment
   var charCount = streamedText.length;
-  // Try to pull current "meaningSimple" or "word" if visible
   var preview = '';
   var meaningMatch = streamedText.match(/"meaning(?:Simple|Ja)"\s*:\s*"([^"]*)/);
   if(meaningMatch) preview = meaningMatch[1];
@@ -2677,8 +2679,8 @@ function updateLoadingProgress(streamedText){
     }
   }
   el.innerHTML =
-    '<div class="l-bar"><div class="l-bar-fill" style="width:' + Math.min(100, charCount / 18) + '%;"></div></div>' +
-    (preview ? '<div class="l-preview">' + escapeHTML(preview.slice(0, 80)) + (preview.length > 80 ? '…' : '') + '</div>' : '');
+    '<div class="l-bar"><div class="l-bar-fill" style="width:' + Math.min(100, charCount / 25) + '%;"></div></div>' +
+    (preview ? '<div class="l-preview">' + escapeHTML(preview.slice(0, 80)) + (preview.length > 80 ? '…' : '') + '</div>' : '<div class="l-preview">情報を取得中…</div>');
 }
 
 // ---------- FILTER ----------
@@ -4491,6 +4493,7 @@ async function streamAnthropic(promptOrMessages, options, onChunk){
     stream: true
   };
   if(options && options.system) body.system = options.system;
+  if(options && options.tools) body.tools = options.tools;
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST', headers: headers, body: JSON.stringify(body)
   });
