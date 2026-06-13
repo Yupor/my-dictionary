@@ -428,6 +428,124 @@
   .english-filters-toggle summary:hover{color:var(--ink);}
   .english-filters-inner{padding:8px 0 16px;margin-bottom:0 !important;}
 
+  /* English view tabs */
+  .eng-view-tabs{
+    display:flex;gap:30px;
+    border-bottom:1px solid var(--ink);
+    margin-bottom:24px;padding-bottom:14px;
+  }
+  .eng-tab{
+    background:transparent;border:none;cursor:pointer;
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;
+    font-weight:500;font-size:12px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--ink-mute);
+    padding:6px 0;position:relative;transition:color 0.15s;
+  }
+  .eng-tab:hover{color:var(--ink);}
+  .eng-tab.active{color:var(--ink);}
+  .eng-tab.active::after{
+    content:'';position:absolute;left:0;right:0;bottom:-15px;height:2px;
+    background:var(--accent);
+  }
+  .eng-view{display:none;}
+  .eng-view.active{display:block;}
+
+  /* Duplicate warning under add input */
+  .dup-warn{
+    display:none;margin-top:10px;padding:10px 14px;
+    background:rgba(199,62,43,0.08);
+    border-left:3px solid var(--accent);
+    font-family:'Newsreader','Noto Serif JP',serif;font-style:italic;
+    font-size:14px;color:var(--ink);line-height:1.5;
+  }
+  .dup-warn.show{display:block;animation:dwFade 0.2s;}
+  @keyframes dwFade{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
+  .dup-warn-link{
+    color:var(--accent);text-decoration:none;font-weight:600;font-style:normal;
+    cursor:pointer;border-bottom:1px solid var(--accent);
+  }
+  .dup-warn-strong{
+    color:var(--accent);font-weight:600;font-style:normal;
+  }
+
+  /* Synonym Map */
+  .syn-map-stats{
+    display:flex;gap:32px;margin-bottom:24px;flex-wrap:wrap;
+  }
+  .syn-map-stats .sms-item{display:flex;flex-direction:column;gap:4px;}
+  .syn-map-stats .sms-num{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:600;
+    font-size:36px;line-height:1;letter-spacing:-0.02em;color:var(--ink);
+  }
+  .syn-map-stats .sms-lbl{
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;
+    font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-mute);
+  }
+  .syn-map-controls{
+    display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap;
+  }
+  .syn-map-controls .smc-btn{
+    padding:8px 18px;background:transparent;
+    border:1px solid var(--line);cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:11px;
+    letter-spacing:0.12em;text-transform:uppercase;color:var(--ink);
+    transition:all 0.15s;
+  }
+  .syn-map-controls .smc-btn:hover{border-color:var(--ink);background:var(--card);}
+  .syn-map-controls .smc-btn.active{
+    background:var(--ink);color:var(--bg);border-color:var(--ink);
+  }
+  .syn-map-controls .smc-info{
+    margin-left:auto;font-family:'Newsreader',serif;font-style:italic;
+    font-size:13px;color:var(--ink-mute);
+  }
+  .syn-map-svg-wrap{
+    position:relative;width:100%;height:560px;
+    background:var(--card);border:1px solid var(--line);
+    overflow:hidden;
+  }
+  #synMapSvg{width:100%;height:100%;display:block;cursor:grab;}
+  #synMapSvg:active{cursor:grabbing;}
+  .syn-node circle{
+    cursor:pointer;transition:filter 0.15s;
+  }
+  .syn-node:hover circle{
+    filter:brightness(1.1);
+  }
+  .syn-node text{
+    pointer-events:none;
+    font-family:'Newsreader',serif;font-weight:500;
+    text-anchor:middle;dominant-baseline:central;
+    fill:var(--ink);
+  }
+  .syn-node-versatile circle{
+    stroke:var(--accent);stroke-width:3;
+  }
+  .syn-link{
+    stroke:var(--ink-mute);stroke-opacity:0.35;
+  }
+  .syn-link.cross-group{stroke-dasharray:3,3;stroke-opacity:0.15;}
+  .syn-empty-state{
+    grid-column:1/-1;text-align:center;padding:60px 20px;
+    color:var(--ink-mute);font-family:'Newsreader',serif;font-style:italic;
+    font-size:16px;
+  }
+  .syn-map-legend{
+    margin-top:18px;padding:16px 0;
+    display:flex;gap:28px;flex-wrap:wrap;
+    border-top:1px solid var(--line);
+    font-family:'IBM Plex Sans','Noto Sans JP',sans-serif;font-size:12px;
+    color:var(--ink-soft);
+  }
+  .smleg-item{display:flex;align-items:center;gap:8px;}
+  .smleg-dot{width:14px;height:14px;border-radius:50%;display:inline-block;}
+  .smleg-ring{border:2px solid var(--accent);}
+  @media(max-width:680px){
+    .syn-map-svg-wrap{height:440px;}
+    .syn-map-stats{gap:18px;}
+    .syn-map-stats .sms-num{font-size:28px;}
+  }
+
   /* ========= REVIEW SESSION ========= */
   .review-container{
     padding:20px 0;text-align:center;display:flex;flex-direction:column;align-items:center;
@@ -1723,7 +1841,7 @@
     <span class="dash">—</span>
     <span><span class="count" id="countNum">0</span>entries collected</span>
     <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">local</span></span>
-    <span class="version-badge">v29</span>
+    <span class="version-badge">v30</span>
   </div>
   <nav class="mode-toggle">
     <button class="mode-btn active" data-mode="lexicon">
@@ -1812,6 +1930,7 @@
     <input type="text" class="add-input" id="addEnglishInput" placeholder="e.g. end up / precrastinator / pivotal" autocomplete="off" spellcheck="false">
     <button class="add-btn" id="addEnglishBtn">Add <span class="arrow">→</span></button>
   </div>
+  <div class="dup-warn" id="englishDupWarn"></div>
   <div class="suggestions" id="englishSuggestions"></div>
 </section>
 
@@ -1820,35 +1939,56 @@
   <section class="english-review-cta" id="englishReviewCTA"></section>
 </div>
 
-<details class="english-filters-toggle" open>
-  <summary>Filters & search</summary>
-  <section class="filters english-filters-inner">
-    <div class="filter-row">
-      <div class="search-wrap">
-        <input type="text" class="search-filter" id="englishSearchFilter" placeholder="単語を検索...">
-      </div>
-      <span class="sort-label">Sort</span>
-      <select class="sort-select" id="englishSortSelect">
-        <option value="newest">newest</option>
-        <option value="oldest">oldest</option>
-        <option value="az">A → Z</option>
-        <option value="mastery">by mastery</option>
-        <option value="due">review due</option>
-      </select>
-    </div>
-    <div class="filter-group-label">Mastery</div>
-    <div class="cat-pills" id="englishMasteryPills"></div>
-    <div class="filter-group-label">Part of speech</div>
-    <div class="cat-pills" id="englishPosPills"></div>
-  </section>
-</details>
+<nav class="eng-view-tabs">
+  <button class="eng-tab active" data-engview="vocab"># Vocabulary</button>
+  <button class="eng-tab" data-engview="map">⟡ Synonym Map</button>
+</nav>
 
-<div class="entries-eyebrow">
-  <span>Vocabulary</span>
-  <span class="line"></span>
+<div id="engView-vocab" class="eng-view active">
+  <details class="english-filters-toggle" open>
+    <summary>Filters & search</summary>
+    <section class="filters english-filters-inner">
+      <div class="filter-row">
+        <div class="search-wrap">
+          <input type="text" class="search-filter" id="englishSearchFilter" placeholder="単語を検索...">
+        </div>
+        <span class="sort-label">Sort</span>
+        <select class="sort-select" id="englishSortSelect">
+          <option value="newest">newest</option>
+          <option value="oldest">oldest</option>
+          <option value="az">A → Z</option>
+          <option value="mastery">by mastery</option>
+          <option value="due">review due</option>
+        </select>
+      </div>
+      <div class="filter-group-label">Mastery</div>
+      <div class="cat-pills" id="englishMasteryPills"></div>
+      <div class="filter-group-label">Part of speech</div>
+      <div class="cat-pills" id="englishPosPills"></div>
+    </section>
+  </details>
+
+  <div class="entries-eyebrow">
+    <span>Vocabulary</span>
+    <span class="line"></span>
+  </div>
+
+  <section class="english-entries" id="englishEntries"></section>
 </div>
 
-<section class="english-entries" id="englishEntries"></section>
+<div id="engView-map" class="eng-view">
+  <div class="map-header">
+    <div class="map-title">類義語の地形図</div>
+    <div class="map-sub">Words connected by meaning. Larger and red-ringed nodes are more versatile/general — better for writing. Smaller ones are specialized.</div>
+  </div>
+  <div class="syn-map-stats" id="synMapStats"></div>
+  <div class="syn-map-controls" id="synMapControls"></div>
+  <div class="syn-map-svg-wrap">
+    <svg id="synMapSvg"></svg>
+    <div class="map-tooltip" id="synMapTooltip"></div>
+  </div>
+  <div class="syn-map-legend" id="synMapLegend"></div>
+</div>
 
 </div><!-- end englishMode -->
 
@@ -1942,6 +2082,7 @@ var state = {
   filter: {category:'all', search:'', sort:'newest', tags:[]},
   englishFilter: {mastery:'all', search:'', sort:'newest', pos:'all'},
   mode: 'lexicon', // 'lexicon' or 'english'
+  engView: 'vocab', // 'vocab' or 'map' (English-mode subview)
   activeId: null,
   activeEnglishId: null
 };
@@ -4604,10 +4745,31 @@ async function addEnglishEntry(){
   var btn = document.getElementById('addEnglishBtn');
   var raw = input.value.trim();
   if(!raw) return;
-  var dup = state.englishEntries.find(function(e){
-    return (e.word || '').trim().toLowerCase() === raw.toLowerCase();
-  });
-  if(dup){ showToast('既に登録済み: ' + raw); openEnglishDetail(dup.id); return; }
+  // Stronger duplicate check (exact + inflection)
+  var dupCheck = checkEnglishDuplicate(raw);
+  if(dupCheck && dupCheck.type === 'exact'){
+    showToast('既に登録済み: ' + dupCheck.entry.word, {
+      duration: 3500,
+      actionLabel: 'open →',
+      actionFn: function(){ openEnglishDetail(dupCheck.entry.id); }
+    });
+    input.value = '';
+    var warn = document.getElementById('englishDupWarn');
+    if(warn) warn.classList.remove('show');
+    return;
+  }
+  if(dupCheck && dupCheck.type === 'inflection'){
+    var inflMsg = '「' + raw + '」は「' + dupCheck.original + '」の活用形として既に登録されている可能性があります。\n\n' +
+      'OK: それでも別エントリとして追加\n' +
+      'キャンセル: 既存エントリを開く';
+    if(!confirm(inflMsg)){
+      input.value = '';
+      var warn2 = document.getElementById('englishDupWarn');
+      if(warn2) warn2.classList.remove('show');
+      openEnglishDetail(dupCheck.entry.id);
+      return;
+    }
+  }
 
   btn.disabled = true;
   btn.innerHTML = '<span style="font-style:italic;font-family:Newsreader,serif;">searching</span>';
@@ -5096,10 +5258,410 @@ function renderEnglishEntries(){
 }
 
 function renderEnglish(){
+  // Invalidate synonym map cache on each render (cheap)
+  synGroupsCache = null;
   renderEnglishProgress();
   renderEnglishReviewCTA();
   renderEnglishFilters();
   renderEnglishEntries();
+  if(state.engView === 'map') renderSynonymMap();
+}
+
+// ---------- ENGLISH VIEW TABS ----------
+state.engView = state.engView || 'vocab';
+function switchEngView(view){
+  state.engView = view;
+  document.querySelectorAll('.eng-view').forEach(function(el){ el.classList.remove('active'); });
+  var target = document.getElementById('engView-' + view);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.eng-tab').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-engview') === view);
+  });
+  if(view === 'map') renderSynonymMap();
+}
+setTimeout(function(){
+  document.querySelectorAll('.eng-tab').forEach(function(b){
+    b.addEventListener('click', function(){ switchEngView(b.getAttribute('data-engview')); });
+  });
+}, 100);
+
+// ---------- DUPLICATE DETECTION ----------
+// Normalize words for fuzzy matching - strip common inflections
+function normalizeWord(w){
+  var s = (w || '').trim().toLowerCase();
+  // Strip multi-word phrasal verbs to root
+  if(s.indexOf(' ') !== -1) return s;
+  // Strip common inflections
+  if(/ies$/.test(s)) return s.slice(0, -3) + 'y';
+  if(/ied$/.test(s)) return s.slice(0, -3) + 'y';
+  if(/ying$/.test(s)) return s.slice(0, -4) + 'y';
+  if(/ing$/.test(s) && s.length > 4){
+    var stem = s.slice(0, -3);
+    // double-letter consonants: running → run
+    if(stem.length > 1 && stem[stem.length-1] === stem[stem.length-2]) stem = stem.slice(0, -1);
+    return stem;
+  }
+  if(/ed$/.test(s) && s.length > 3){
+    var stem2 = s.slice(0, -2);
+    if(stem2.length > 1 && stem2[stem2.length-1] === stem2[stem2.length-2]) stem2 = stem2.slice(0, -1);
+    return stem2;
+  }
+  if(/(s|es)$/.test(s) && s.length > 2){
+    if(/es$/.test(s) && (s.endsWith('ses') || s.endsWith('xes') || s.endsWith('zes') || s.endsWith('ches') || s.endsWith('shes'))){
+      return s.slice(0, -2);
+    }
+    return s.slice(0, -1);
+  }
+  // Irregular verbs (basic)
+  var irregular = {
+    'went':'go','gone':'go','goes':'go','going':'go',
+    'came':'come','comes':'come','coming':'come',
+    'took':'take','taken':'take','takes':'take','taking':'take',
+    'made':'make','makes':'make','making':'make',
+    'said':'say','says':'say','saying':'say',
+    'got':'get','gotten':'get','getting':'get','gets':'get',
+    'gave':'give','given':'give','gives':'give','giving':'give',
+    'saw':'see','seen':'see','sees':'see','seeing':'see',
+    'ran':'run','runs':'run','running':'run',
+    'began':'begin','begun':'begin','begins':'begin','beginning':'begin',
+    'broke':'break','broken':'break','breaks':'break','breaking':'break',
+    'chose':'choose','chosen':'choose','chooses':'choose','choosing':'choose',
+    'spoke':'speak','spoken':'speak','speaks':'speak','speaking':'speak',
+    'wrote':'write','written':'write','writes':'write','writing':'write',
+    'better':'good','best':'good',
+    'worse':'bad','worst':'bad'
+  };
+  if(irregular[s]) return irregular[s];
+  return s;
+}
+
+function checkEnglishDuplicate(input){
+  var raw = (input || '').trim();
+  if(!raw) return null;
+  var rawLower = raw.toLowerCase();
+  // Exact match (case insensitive)
+  var exact = state.englishEntries.find(function(e){
+    return (e.word || '').trim().toLowerCase() === rawLower;
+  });
+  if(exact) return {type:'exact', entry: exact};
+  // Inflection match
+  var norm = normalizeWord(raw);
+  var inflection = state.englishEntries.find(function(e){
+    var en = normalizeWord(e.word || '');
+    return en === norm && en !== rawLower;
+  });
+  if(inflection) return {type:'inflection', entry: inflection, original: inflection.word};
+  return null;
+}
+
+function renderDupWarn(){
+  var input = document.getElementById('addEnglishInput');
+  var warn = document.getElementById('englishDupWarn');
+  if(!input || !warn) return;
+  var raw = input.value.trim();
+  if(!raw){ warn.classList.remove('show'); return; }
+  var dup = checkEnglishDuplicate(raw);
+  if(!dup){ warn.classList.remove('show'); return; }
+  if(dup.type === 'exact'){
+    warn.innerHTML =
+      '<span class="dup-warn-strong">既に登録済み</span> — ' +
+      '<span class="dup-warn-link" data-open-id="' + dup.entry.id + '">「' + escapeHTML(dup.entry.word) + '」を開く →</span>';
+  } else if(dup.type === 'inflection'){
+    warn.innerHTML =
+      '<span class="dup-warn-strong">活用形を検出</span> — ' +
+      '「' + escapeHTML(raw) + '」は ' +
+      '<span class="dup-warn-link" data-open-id="' + dup.entry.id + '">' + escapeHTML(dup.original) + '</span>' +
+      ' の活用形として登録済みです';
+  }
+  warn.classList.add('show');
+  var linkEl = warn.querySelector('.dup-warn-link');
+  if(linkEl){
+    linkEl.onclick = function(){
+      var id = linkEl.getAttribute('data-open-id');
+      input.value = '';
+      warn.classList.remove('show');
+      openEnglishDetail(id);
+    };
+  }
+}
+
+// ---------- SYNONYM MAP ----------
+var synGroupsCache = null;
+var synGroupsCacheKey = '';
+
+function getSynonymGroups(){
+  // Group entries by overlapping synonyms — each entry's synonyms list, plus the entry itself
+  var entries = state.englishEntries;
+  // Build cache key from entry IDs and synonym lists
+  var key = entries.map(function(e){
+    return e.id + ':' + (e.synonyms || []).length;
+  }).join('|');
+  if(synGroupsCache && synGroupsCacheKey === key) return synGroupsCache;
+
+  // Union-Find: cluster entries whose synonym/related lists overlap
+  var parent = {};
+  function find(x){ return parent[x] === x ? x : (parent[x] = find(parent[x])); }
+  function union(a, b){
+    var ra = find(a), rb = find(b);
+    if(ra !== rb) parent[ra] = rb;
+  }
+  entries.forEach(function(e){ parent[e.id] = e.id; });
+
+  // Build a map of: normalized word/synonym → list of entry IDs containing it
+  var termToEntries = {};
+  entries.forEach(function(e){
+    var allTerms = [e.word].concat(e.synonyms || []).concat(e.relatedWords || []);
+    allTerms.forEach(function(raw){
+      if(!raw) return;
+      // Strip parenthetical hints: "wind up (more casual)" -> "wind up"
+      var clean = raw.replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase();
+      if(!clean) return;
+      if(!termToEntries[clean]) termToEntries[clean] = [];
+      if(termToEntries[clean].indexOf(e.id) === -1){
+        termToEntries[clean].push(e.id);
+      }
+    });
+  });
+
+  // Union entries sharing terms
+  Object.keys(termToEntries).forEach(function(t){
+    var ids = termToEntries[t];
+    for(var i = 1; i < ids.length; i++){
+      union(ids[0], ids[i]);
+    }
+  });
+
+  // Collect groups
+  var groups = {};
+  entries.forEach(function(e){
+    var r = find(e.id);
+    if(!groups[r]) groups[r] = [];
+    groups[r].push(e);
+  });
+
+  synGroupsCache = groups;
+  synGroupsCacheKey = key;
+  return groups;
+}
+
+// Rough versatility score: shorter, more synonyms registered, simpler word = more versatile
+function versatilityScore(entry, allEntries){
+  var word = (entry.word || '').toLowerCase();
+  var score = 50;
+  // Shorter is more versatile (common words are short)
+  if(word.length <= 4) score += 25;
+  else if(word.length <= 6) score += 15;
+  else if(word.length <= 8) score += 5;
+  else if(word.length > 12) score -= 10;
+  // Single word > phrasal verb (which is more specific)
+  if(word.indexOf(' ') === -1) score += 10;
+  // Many synonyms registered = it's a hub word
+  var numSyns = (entry.synonyms || []).length + (entry.relatedWords || []).length;
+  if(numSyns >= 5) score += 15;
+  else if(numSyns >= 3) score += 8;
+  // Common simple words boost
+  var commonWords = ['important','use','make','get','have','take','go','come','see','know','think','say','find','give','need','want','put','show','help','tell','work','feel','seem','call','look'];
+  if(commonWords.indexOf(word) !== -1) score += 20;
+  // Heavily Latinate / academic = less versatile
+  if(/(tion|sion|ment|ity|ous|ize|ate)$/.test(word) && word.length > 8) score -= 10;
+  return Math.max(0, Math.min(100, score));
+}
+
+function renderSynonymMap(){
+  var statsEl = document.getElementById('synMapStats');
+  var svgEl = document.getElementById('synMapSvg');
+  var legendEl = document.getElementById('synMapLegend');
+  var controlsEl = document.getElementById('synMapControls');
+  if(!svgEl) return;
+
+  var entries = state.englishEntries;
+  if(entries.length === 0){
+    statsEl.innerHTML = '';
+    controlsEl.innerHTML = '';
+    legendEl.innerHTML = '';
+    svgEl.innerHTML = '<text x="50%" y="50%" text-anchor="middle" class="syn-empty-state-text" style="font-family:Newsreader;font-style:italic;fill:#888;font-size:16px;">単語をいくつか追加すると、ここに類義語の地図が現れます</text>';
+    return;
+  }
+
+  var groups = getSynonymGroups();
+  var groupIds = Object.keys(groups);
+  var clusteredCount = groupIds.filter(function(g){ return groups[g].length > 1; }).length;
+  var soloCount = groupIds.filter(function(g){ return groups[g].length === 1; }).length;
+
+  statsEl.innerHTML =
+    '<div class="sms-item"><span class="sms-num">' + entries.length + '</span><span class="sms-lbl">total words</span></div>' +
+    '<div class="sms-item"><span class="sms-num">' + clusteredCount + '</span><span class="sms-lbl">synonym groups</span></div>' +
+    '<div class="sms-item"><span class="sms-num">' + soloCount + '</span><span class="sms-lbl">standalone</span></div>';
+
+  // Score each entry
+  var nodesData = entries.map(function(e){
+    var s = versatilityScore(e, entries);
+    return {
+      id: e.id, word: e.word, entry: e,
+      versatility: s,
+      group: Object.keys(groups).find(function(g){
+        return groups[g].some(function(x){ return x.id === e.id; });
+      }) || e.id
+    };
+  });
+  // For each group, mark the highest-versatility as "versatile/main"
+  var maxByGroup = {};
+  nodesData.forEach(function(n){
+    if(!maxByGroup[n.group] || n.versatility > maxByGroup[n.group].versatility){
+      maxByGroup[n.group] = n;
+    }
+  });
+  nodesData.forEach(function(n){
+    n.isVersatile = (maxByGroup[n.group] && maxByGroup[n.group].id === n.id) && groups[n.group] && groups[n.group].length > 1;
+  });
+
+  // Build links - all pairs within a group
+  var linksData = [];
+  groupIds.forEach(function(g){
+    var members = groups[g];
+    for(var i = 0; i < members.length; i++){
+      for(var j = i+1; j < members.length; j++){
+        linksData.push({source: members[i].id, target: members[j].id});
+      }
+    }
+  });
+
+  // Color per group (cycle through a palette)
+  var GROUP_COLORS = ['#8B2E2C','#A8702C','#7A8050','#4F6478','#6E4863','#3F6B2E','#C73E2B','#3D4F7A','#7C5E3A','#5A6B6F'];
+  var groupColorMap = {};
+  groupIds.forEach(function(g, i){
+    groupColorMap[g] = GROUP_COLORS[i % GROUP_COLORS.length];
+  });
+
+  // Render with D3
+  controlsEl.innerHTML =
+    '<span class="smc-info">' +
+      (clusteredCount > 0
+        ? '赤いリングの単語が、その意味グループ内で最も汎用性の高い表現'
+        : 'まだ類義語の繋がりが少ないようです。各エントリの synonyms フィールドが整うと、繋がりが見えてきます。') +
+    '</span>';
+
+  legendEl.innerHTML =
+    '<div class="smleg-item"><span class="smleg-dot smleg-ring"></span>汎用性高（書きやすい）</div>' +
+    '<div class="smleg-item"><span class="smleg-dot" style="background:#888;"></span>専門的・限定的</div>' +
+    '<div class="smleg-item"><span class="smleg-dot" style="background:#8B2E2C;opacity:0.5;"></span>同色は意味グループ</div>' +
+    '<div class="smleg-item">球の大きさ = 汎用性スコア</div>';
+
+  // Clear and prepare SVG
+  while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  var rect = svgEl.getBoundingClientRect();
+  var width = rect.width;
+  var height = rect.height;
+
+  // Simple manual force simulation (avoiding d3 dependency if not loaded)
+  // But d3 is available based on existing map. Let me use it.
+  if(typeof d3 === 'undefined'){
+    svgEl.innerHTML = '<text x="50%" y="50%" text-anchor="middle" style="font-family:Newsreader;fill:#888;">D3 unavailable</text>';
+    return;
+  }
+
+  var svg = d3.select(svgEl);
+  // Container for zoom/pan
+  var g = svg.append('g');
+  svg.call(d3.zoom()
+    .scaleExtent([0.4, 3])
+    .on('zoom', function(ev){ g.attr('transform', ev.transform); })
+  );
+
+  // Force simulation
+  var simulation = d3.forceSimulation(nodesData)
+    .force('link', d3.forceLink(linksData).id(function(d){ return d.id; }).distance(80).strength(0.6))
+    .force('charge', d3.forceManyBody().strength(-250))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide().radius(function(d){ return nodeRadius(d) + 3; }));
+
+  var link = g.append('g').attr('class', 'syn-links').selectAll('line')
+    .data(linksData).enter().append('line')
+    .attr('class', 'syn-link');
+
+  var node = g.append('g').attr('class', 'syn-nodes').selectAll('g')
+    .data(nodesData).enter().append('g')
+    .attr('class', function(d){ return 'syn-node' + (d.isVersatile ? ' syn-node-versatile' : ''); })
+    .call(d3.drag()
+      .on('start', function(ev, d){
+        if(!ev.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on('drag', function(ev, d){ d.fx = ev.x; d.fy = ev.y; })
+      .on('end', function(ev, d){
+        if(!ev.active) simulation.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      })
+    );
+
+  function nodeRadius(d){
+    return 14 + (d.versatility / 100) * 26;
+  }
+
+  node.append('circle')
+    .attr('r', nodeRadius)
+    .attr('fill', function(d){ return groupColorMap[d.group]; })
+    .attr('fill-opacity', 0.85);
+
+  node.append('text')
+    .text(function(d){
+      var w = d.word;
+      return w.length > 12 ? w.slice(0, 10) + '…' : w;
+    })
+    .attr('font-size', function(d){
+      var r = nodeRadius(d);
+      return Math.min(r * 0.55, 16);
+    })
+    .attr('fill', function(d){
+      // Light text on dark backgrounds
+      var c = groupColorMap[d.group];
+      return isDarkColor(c) ? '#FFFFFF' : '#1A1A1A';
+    });
+
+  // Hover tooltip
+  var tooltip = document.getElementById('synMapTooltip');
+  node.on('mouseenter', function(ev, d){
+    if(!tooltip) return;
+    var rect2 = svgEl.getBoundingClientRect();
+    tooltip.innerHTML =
+      '<div class="tt-word">' + escapeHTML(d.word) + '</div>' +
+      '<div style="font-family:Newsreader,serif;font-style:italic;margin-bottom:4px;">' + escapeHTML((d.entry.meaningJa || '').slice(0, 60)) + '</div>' +
+      '<div class="tt-meta">' +
+        (d.isVersatile ? '★ このグループで最も汎用 · ' : '') +
+        '汎用性 ' + d.versatility + '/100' +
+      '</div>';
+    tooltip.classList.add('show');
+    tooltip.style.left = (ev.clientX - rect2.left + 12) + 'px';
+    tooltip.style.top = (ev.clientY - rect2.top + 12) + 'px';
+  });
+  node.on('mousemove', function(ev){
+    if(!tooltip) return;
+    var rect2 = svgEl.getBoundingClientRect();
+    tooltip.style.left = (ev.clientX - rect2.left + 12) + 'px';
+    tooltip.style.top = (ev.clientY - rect2.top + 12) + 'px';
+  });
+  node.on('mouseleave', function(){
+    if(tooltip) tooltip.classList.remove('show');
+  });
+  node.on('click', function(ev, d){
+    openEnglishDetail(d.id);
+  });
+
+  simulation.on('tick', function(){
+    link
+      .attr('x1', function(d){ return d.source.x; })
+      .attr('y1', function(d){ return d.source.y; })
+      .attr('x2', function(d){ return d.target.x; })
+      .attr('y2', function(d){ return d.target.y; });
+    node.attr('transform', function(d){ return 'translate(' + d.x + ',' + d.y + ')'; });
+  });
+}
+
+function isDarkColor(hex){
+  var r = parseInt(hex.slice(1,3), 16);
+  var g = parseInt(hex.slice(3,5), 16);
+  var b = parseInt(hex.slice(5,7), 16);
+  return (r*0.299 + g*0.587 + b*0.114) < 140;
 }
 
 // ---------- ENGLISH DETAIL PANEL ----------
@@ -5442,6 +6004,7 @@ document.getElementById('addEnglishInput').addEventListener('keydown', function(
   if(e.key === 'Enter' && !e.isComposing) addEnglishEntry();
 });
 document.getElementById('addEnglishInput').addEventListener('input', renderEnglishSuggestions);
+document.getElementById('addEnglishInput').addEventListener('input', renderDupWarn);
 document.getElementById('addEnglishInput').addEventListener('blur', function(){
   setTimeout(function(){
     if(document.activeElement !== document.getElementById('addEnglishInput')){
